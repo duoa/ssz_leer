@@ -60,7 +60,7 @@ An analyst needs to discover at least one non-obvious pattern in the data that e
 
 ### User Story 4 - Compare Age Group Differences (Priority: P1)
 
-A policy analyst needs to understand how different age groups are affected by Leerkündigungen, specifically whether younger vs older residents have different likelihoods of remaining in Zurich city vs moving outside.
+ how different age groups are affected by Leerkündigungen, specifically whether younger vs older residents have different likelihoods of remaining in Zurich city vs moving outside.
 
 **Why this priority**: This is a core analytical requirement that addresses clear group differences, which is central to the assignment objective.
 
