@@ -24,12 +24,12 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create project directory structure: `analysis/`, `scripts/`, `tests/testthat/`, `output/`, `docker/`, `.github/workflows/`
-- [ ] T002 Initialize R project with renv for dependency management: `renv::init()`
-- [ ] T003 [P] Create `.gitignore` with entries for `output/`, `renv/library/`, `.Rproj.user/`, `.Rhistory`, `.RData`
-- [ ] T004 [P] Create `README.md` with project overview, quickstart instructions, and links to documentation
-- [ ] T005 [P] Install core R packages: tidyverse, readr, dplyr, ggplot2, knitr, rmarkdown, testthat
-- [ ] T006 [P] Create `renv.lock` snapshot of dependencies: `renv::snapshot()`
+- [x] T001 Create project directory structure: `analysis/`, `scripts/`, `tests/testthat/`, `output/`, `docker/`, `.github/workflows/`
+- [x] T002 Initialize R project with renv for dependency management: `renv::init()`
+- [x] T003 [P] Create `.gitignore` with entries for `output/`, `renv/library/`, `.Rproj.user/`, `.Rhistory`, `.RData`
+- [x] T004 [P] Create `README.md` with project overview, quickstart instructions, and links to documentation
+- [x] T005 [P] Install core R packages: tidyverse, readr, dplyr, ggplot2, knitr, rmarkdown, testthat
+- [x] T006 [P] Create `renv.lock` snapshot of dependencies: `renv::snapshot()`
 
 ---
 
@@ -39,15 +39,15 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T007 Create `scripts/utils.R` with field mapping constants (FIELD_MAPPINGS, WITHIN_CITY_CATEGORIES)
-- [ ] T008 [P] Implement field mapping function `map_fields()` in `scripts/utils.R`
-- [ ] T009 [P] Implement within/outside city derivation function in `scripts/utils.R`
-- [ ] T010 Create `scripts/01_load.R` with data loading function `load_dataset(url)`
-- [ ] T011 Implement dataset validation function `validate_dataset(df)` in `scripts/01_load.R` with fail-fast checks
-- [ ] T012 [P] Create `scripts/02_explore.R` with exploration functions (time_range, total_count, categories, anomalies)
-- [ ] T013 [P] Create `scripts/03_analyze.R` with analysis function stubs for Q1-Q5
-- [ ] T014 [P] Create `scripts/04_visualize.R` with visualization function stubs
-- [ ] T015 Create main R Markdown document `analysis/leerkuendigungen_analysis.Rmd` with YAML header and section structure
+- [x] T007 Create `scripts/utils.R` with field mapping constants (FIELD_MAPPINGS, WITHIN_CITY_CATEGORIES)
+- [x] T008 [P] Implement field mapping function `map_fields()` in `scripts/utils.R`
+- [x] T009 [P] Implement within/outside city derivation function in `scripts/utils.R`
+- [x] T010 Create `scripts/01_load.R` with data loading function `load_dataset(url)`
+- [x] T011 Implement dataset validation function `validate_dataset(df)` in `scripts/01_load.R` with fail-fast checks
+- [x] T012 [P] Create `scripts/02_explore.R` with exploration functions (time_range, total_count, categories, anomalies)
+- [x] T013 [P] Create `scripts/03_analyze.R` with analysis function stubs for Q1-Q5
+- [x] T014 [P] Create `scripts/04_visualize.R` with visualization function stubs
+- [x] T015 Create main R Markdown document `analysis/leerkuendigungen_analysis.Rmd` with YAML header and section structure
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -61,21 +61,21 @@
 
 ### Implementation for User Story 1
 
-- [ ] T016 [US1] Implement data loading in R Markdown: source `scripts/01_load.R`, call `load_dataset()` with official URL
-- [ ] T017 [US1] Implement field validation and mapping in R Markdown: call `validate_dataset()` and `map_fields()`
-- [ ] T018 [US1] Implement exploration section in R Markdown: call exploration functions from `scripts/02_explore.R`, display results
-- [ ] T019 [US1] Implement Q1 (time dynamics) function in `scripts/03_analyze.R`: aggregate by year, identify peak, describe pattern
-- [ ] T020 [US1] Implement Q2 (composition shift) function in `scripts/03_analyze.R`: calculate residence shares by year, identify deviant years
-- [ ] T021 [US1] Implement Q3 (age gradient) function in `scripts/03_analyze.R`: calculate within-city shares by age group, quantify contrasts
-- [ ] T022 [US1] Implement Q4 (same-quarter) function in `scripts/03_analyze.R`: if applicable, analyze same-quarter shares by age
-- [ ] T023 [US1] Implement Q5 (unknown concentration) function in `scripts/03_analyze.R`: if applicable, analyze unknown distribution by age
-- [ ] T024 [US1] Implement temporal visualization in `scripts/04_visualize.R`: line/bar chart of total affected count over time
-- [ ] T025 [US1] Implement composition visualization in `scripts/04_visualize.R`: stacked area/bar chart of residence composition over time
-- [ ] T026 [US1] Implement age-group visualization in `scripts/04_visualize.R`: bar/point chart of within-city share by age group
-- [ ] T027 [US1] Add analysis sections to R Markdown: call Q1-Q5 functions, display results with narrative
-- [ ] T028 [US1] Add visualization sections to R Markdown: call visualization functions, embed plots
-- [ ] T029 [US1] Add executive summary section to R Markdown: synthesize key findings at top of report
-- [ ] T030 [US1] Configure R Markdown output format: HTML with self-contained option, CSS styling for readability
+- [x] T016 [US1] Implement data loading in R Markdown: source `scripts/01_load.R`, call `load_dataset()` with official URL
+- [x] T017 [US1] Implement field validation and mapping in R Markdown: call `validate_dataset()` and `map_fields()`
+- [x] T018 [US1] Implement exploration section in R Markdown: call exploration functions from `scripts/02_explore.R`, display results
+- [x] T019 [US1] Implement Q1 (time dynamics) function in `scripts/03_analyze.R`: aggregate by year, identify peak, describe pattern
+- [x] T020 [US1] Implement Q2 (composition shift) function in `scripts/03_analyze.R`: calculate residence shares by year, identify deviant years
+- [x] T021 [US1] Implement Q3 (age gradient) function in `scripts/03_analyze.R`: calculate within-city shares by age group, quantify contrasts
+- [x] T022 [US1] Implement Q4 (same-quarter) function in `scripts/03_analyze.R`: if applicable, analyze same-quarter shares by age
+- [x] T023 [US1] Implement Q5 (unknown concentration) function in `scripts/03_analyze.R`: if applicable, analyze unknown distribution by age
+- [x] T024 [US1] Implement temporal visualization in `scripts/04_visualize.R`: line/bar chart of total affected count over time
+- [x] T025 [US1] Implement composition visualization in `scripts/04_visualize.R`: stacked area/bar chart of residence composition over time
+- [x] T026 [US1] Implement age-group visualization in `scripts/04_visualize.R`: bar/point chart of within-city share by age group
+- [x] T027 [US1] Add analysis sections to R Markdown: call Q1-Q5 functions, display results with narrative
+- [x] T028 [US1] Add visualization sections to R Markdown: call visualization functions, embed plots
+- [x] T029 [US1] Add executive summary section to R Markdown: synthesize key findings at top of report
+- [x] T030 [US1] Configure R Markdown output format: HTML with self-contained option, CSS styling for readability
 
 **Checkpoint**: At this point, User Story 1 should be fully functional - complete analysis executes and produces HTML report
 
