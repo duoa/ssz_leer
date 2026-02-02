@@ -1,50 +1,83 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# Zurich Leerkündigungen Analysis Constitution
+
+<!--
+Sync Impact Report:
+- Version change: [initial] → 1.0.0
+- Initial constitution creation
+- Principles defined: 5 core principles aligned with reproducible OGD analysis requirements
+- Templates: ⚠ pending validation against new principles
+- Follow-up: Validate plan-template.md, spec-template.md, tasks-template.md for alignment
+-->
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Single Dataset Rule (NON-NEGOTIABLE)
+The analysis MUST use only the official Zurich OGD dataset (BAU505OD5052.csv).
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+**Rationale**: Ensures reproducibility and prevents hidden dependencies. No external joins, enrichments, or secondary datasets are permitted.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### II. Runtime Data Retrieval
+The dataset MUST be downloaded from the official URL during execution, not bundled or cached.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+**URL**: `https://data.stadt-zuerich.ch/dataset/bau_umbau_leerkuendigung_wohnortsgebiete_ag_personen_od5052/download/BAU505OD5052.csv`
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+**Rationale**: Guarantees analysis runs against current official data and remains verifiable.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+### III. Descriptive Analysis Only
+All findings MUST remain descriptive. No causal claims are permitted.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+**Rationale**: The dataset structure does not support causal inference. Anomalies must be framed as data-quality or reporting considerations, not causal mechanisms.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+### IV. Transparent Methodology
+All aggregations, groupings, and definitions MUST be explicitly documented.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+**Required documentation**:
+- Aggregation measure definition (affected persons count)
+- "Within Zurich City" vs "Outside Zurich City" mapping
+- Treatment of "Unknown" categories
+- Field name mappings if dataset labels differ from conceptual fields
+
+**Rationale**: Ensures analysis is defensible and reproducible by others.
+
+### V. Self-Contained Execution
+The complete analysis MUST execute end-to-end in a clean environment with a single action.
+
+**Requirements**:
+- No manual data preparation steps
+- No external configuration files required
+- Results produced in human-readable form
+- All dependencies explicitly declared
+
+**Rationale**: Enables verification and reduces execution friction.
+
+## Required Workflow
+
+The analysis MUST follow this sequence:
+
+1. **Load**: Download dataset from official URL, validate required fields exist
+2. **Explore**: Document time range, totals, categories, anomalies
+3. **Analyze**: Answer core questions (Q1-Q5 from specification)
+4. **Visualize**: Produce clear visuals for temporal patterns, composition, and age-group relationships
+
+## Quality Standards
+
+### Statistical Relevance
+Include one simple statistical check (e.g., chi-square test for age group vs residence outcome association).
+
+Report interpretable effect size. Interpret conservatively.
+
+### Required Outputs
+- Total affected count over time
+- Residence composition over time
+- Age group vs residence outcome relationship
+- At least one surprising/non-obvious pattern identified
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+This constitution defines the non-negotiable requirements for the Zurich Leerkündigungen analysis.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Amendment procedure**: Changes require documentation of rationale and impact on existing analysis code.
+
+**Compliance**: All analysis code must verify adherence to Single Dataset Rule and Descriptive Analysis Only principles before execution.
+
+**Version**: 1.0.0 | **Ratified**: 2026-02-02 | **Last Amended**: 2026-02-02
