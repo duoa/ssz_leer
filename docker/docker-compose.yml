@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  leerkuendigungen-analysis:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: leerkuendigungen-analysis
+    volumes:
+      - ../output:/analysis/output
+    environment:
+      - RENV_CONFIG_SANDBOX_ENABLED=FALSE
+    networks:
+      - analysis-network
+
+networks:
+  analysis-network:
+    driver: bridge
