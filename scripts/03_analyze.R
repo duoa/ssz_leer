@@ -1,5 +1,4 @@
-# Core Analysis Functions for Zurich Leerkündigungen Analysis
-# This file contains functions to answer the 5 core analytical questions (Q1-Q5)
+# Analysis Functions for Zurich Leerkündigungen Analysis
 
 library(dplyr)
 library(tidyr)
@@ -33,7 +32,7 @@ analyze_time_change <- function(df) {
   ))
 }
 
-#' Q2: Analyze composition shift
+#' Analyze composition shift
 #' Is the distribution of new residence outcomes stable over time?
 #'
 #' @param df Data frame with year, new_residence, and count columns
@@ -103,7 +102,7 @@ analyze_composition_shift <- function(df) {
   ))
 }
 
-#' Q3: Analyze age gradient
+#' Analyze age gradient
 #' Do age groups differ in likelihood of remaining within Zurich city?
 #'
 #' @param df Data frame with age_group, within_city, and count columns
@@ -153,7 +152,7 @@ analyze_age_gradient <- function(df) {
   ))
 }
 
-#' Q4: Analyze same-quarter dependence on age
+#' Analyze same-quarter dependence on age
 #' If "same city quarter" exists, compare its share across age groups
 #'
 #' @param df Data frame with age_group, new_residence, and count columns
@@ -217,7 +216,7 @@ analyze_same_quarter <- function(df) {
   ))
 }
 
-#' Q5: Analyze unknown concentration
+#' Analyze unknown 
 #' If "Unknown" exists, quantify differences across age groups
 #'
 #' @param df Data frame with age_group, new_residence, and count columns

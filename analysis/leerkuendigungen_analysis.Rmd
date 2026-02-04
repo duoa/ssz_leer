@@ -42,8 +42,8 @@ source("../scripts/04_visualize.R")
 ```
 
 # Executive Summary
-
-This analysis examines Leerkündigungen (eviction notices due to building refurbishment) in Zurich using official Open Government Data. Key findings include:Temporal patterns,  age group differences** **Surprising patterns** **Statistical validation*
+Unterscheiden sich Zielorte nach Leerkündigungen systematisch nach Altersgruppen.
+Zwischen 2010 und 2023 wurden 8’559 Personen aufgrund von Leerkündigungen erfasst. Rund X % zogen innerhalb der Stadt um, wobei dieser Anteil stark altersabhängig ist. Jüngere und sehr alte Altersgruppen zeigen signifikant unterschiedliche Zielmuster (χ²-Test, p < 0.001), allerdings mit kleiner Effektstärke (Cramér’s V ≈ 0.07–0.09). Über die Zeit bleiben die Zielort-Strukturen bemerkenswert stabil, trotz jährlicher Schwankungen in der Anzahl Betroffener. !!!Todo mach es besser!!!
 
 ---
 
@@ -287,11 +287,11 @@ kable(q5_table, caption = "Kategorie „Unbekannt“ nach Altersgruppe", align =
 
 ---
 
-# 5. Statistische Einordnung
+# 5. Altersabhängige Unterschiede im Verbleib innerhalb und ausserhalb der Stadt
 
 ## 5.1 Chi-Quadrat-Test
 
-Zur Einordnung, ob sich die Verteilung **„innerhalb der Stadt“ vs. „ausserhalb der Stadt“** zwischen Altersgruppen unterscheidet, wird mit  einen Chi-Quadrat-Test auf Unabhängigkeit (auf aggregierten Zählwerten; ohne Kategorie „Unbekannt“) getestet.
+Zur Einordnung, ob sich die Verteilung **„innerhalb der Stadt“ vs. „ausserhalb der Stadt“** zwischen Altersgruppen unterscheidet, wird mit  einen Chi-Quadrat-Test auf Unabhängigkeit (auf aggregierten Zählwerten; ohne Kategorie „Unbekannt“; siehe oben) getestet.
 
 ```{r statistical-test}
 # Kontingenztafel (ohne "Unbekannt")
@@ -312,7 +312,7 @@ v <- cramers_v(chi_result, contingency_table)
 
 # Resultate als Tabelle
 chi_table <- tibble::tibble(
-  Kennwert = c("Teststatistik (χ²)", "Freiheitsgrade", "p-Wert", "Cramér's V"),
+  Kennwert = c("Teststatistik (χ²)", "Freiheitsgrade", "p-Wert", "Cramer's V"),
   Wert = c(
     round(as.numeric(chi_result$statistic), 2),
     as.numeric(chi_result$parameter),
@@ -330,69 +330,10 @@ kable(contingency_table, caption = "Kontingenztafel: Altersgruppe × Ziel (inner
 
 Der Chi-Quadrat-Test deutet auf einen Zusammenhang zwischen Altersgruppe und Ziel (innerhalb/ausserhalb der Stadt) hin (p = `r format.pval(chi_result$p.value, digits = 3)`). Die Effektgrösse **Cramér’s V** beträgt `r round(v, 3)` und entspricht einem kleinen Effekt.
 
-**Limitations**:
-
-- This is **aggregate-level data**, not individual-level
-- The analysis is **observational**, not experimental
-- We **cannot infer causation** from these associations
-- The findings describe **patterns**, not mechanisms
-- Other unmeasured factors may influence the observed associations
-
-**Conclusion**: The data suggests systematic differences in residence outcomes across age groups, but these should be interpreted as descriptive patterns rather than causal relationships.
-
 ---
 
 # 6. Verteilungen Zwischen Zielorten und Altersgruppen
-
-
-## 6.2 Total variations-Distanzmatrix: Wie ähnlich sind die Jahre bezüglich Zielort-Verteilung?
-
-Um zu prüfen, ob sich die Zielorte nach Leerkündigung über die Zeit nur in der Menge, aber auch in der **Struktur** (Komposition) verändern, berechne ich für jedes Jahr die Verteilung der Kategorien `new_residence` als **Anteile**.
-
-Für jedes Jahr \(t\) ergibt sich ein Vektor \(p^{(t)} = (p_1^{(t)}, \dots, p_K^{(t)})\), wobei \(p_i^{(t)}\) der Anteil der Betroffenen ist, die im Zielort \(i\) landen (Summe über alle Zielorte = 1).
-
-Als Distanzmass verwende ich die **Total-Variation-Distanz (TV)** zwischen zwei Verteilungen \(p\) und \(q\):
-
-\[
-TV(p, q) \;=\; \frac{1}{2}\sum_{i=1}^{K} |p_i - q_i|
-\]
-
-**Interpretation:**
-- \(TV = 0\): die beiden Jahre haben **identische** Zielort-Verteilungen.
-- Je grösser \(TV\), desto **stärker** unterscheiden sich die Kompositionen.
-- \(TV\) liegt immer zwischen 0 und 1. Als Faustregel: ein \(TV\) von 0.10 bedeutet, dass man insgesamt etwa 10 Prozentpunkte „Masse“ zwischen Kategorien verschieben müsste, um die eine Verteilung in die andere zu überführen.
-
-Die resultierende paarweise Distanzmatrix über alle Jahre visualisiere ich als Heatmap: dunklere Felder markieren Jahre, deren Zielort-Verteilungen sich deutlich unterscheiden; helle Felder markieren ähnliche Jahre.
-
-```{r vergleich distance matrix jahre}
-
-shares <- df %>%
-  group_by(year, new_residence) %>%
-  summarise(x = sum(count, na.rm = TRUE), .groups = "drop") %>%
-  group_by(year) %>%
-  mutate(p = x / sum(x)) %>%
-  ungroup() %>%
-  select(year, new_residence, p) %>%
-  pivot_wider(names_from = new_residence, values_from = p, values_fill = 0) %>%
-  arrange(year)
-
-years <- shares$year
-M <- as.matrix(dplyr::select(shares, -year))
-
-# Total Variation (TV) = 0.5 * L1 (Manhattan) distance between share vectors
-D <- as.matrix(dist(M, method = "manhattan")) * 0.5
-dimnames(D) <- list(years, years)
-
-p4b_data <- as.data.frame(as.table(D)) %>%
-  rename(y1 = Var1, y2 = Var2, tv = Freq)
-
-p4b <- ggplot(p4b_data, aes(y2, y1, fill = tv)) +
-  geom_tile() +
-  labs(title = "TV-Distanzmatrix der Jahre (0 = identisch)", x = "Jahr", y = "Jahr")
-
-p4b
-
-```
+Der globale Chi-Quadrat-Test basiert auf einer binären Klassifikation der Zielorte (innerhalb vs. ausserhalb der Stadt), um einen robusten Gesamteindruck zu erhalten. In einem zweiten Schritt wird diese Kategorie „ausserhalb der Stadt“ weiter aufgeschlüsselt, um zu untersuchen, welche spezifischen Zielorte zu den beobachteten Unterschieden beitragen.
 
 ## 6.3 Standardisierte Residuen (Alter × Zielort): Wo liegt der Zusammenhang genau?
 
@@ -569,13 +510,16 @@ V
 ```
 
 
-# 7. Summary of Key Findings
+# 7. Limitationen
+- Ohne Bezug zur Altersstruktur der Gesamtbevölkerung können wir nicht beurteilen, ob bestimmte Altersgruppen über- oder unterproportional betroffen sind.
+- Der Datensatz erfasst nur Personen mit gemeldeter Leerkündigung und nicht nicht alle Umzüge.
 
 
 
-# Appendix A: Supplementary Figures
 
-## S.Fig.A1
+# Appendix:
+
+## Appendix A1: Supplementary Figures
 
 ```{r supp-figure-a1}
 
@@ -608,6 +552,59 @@ p13 <- ggplot(p13_data, aes(x = age_group, y = share, fill = new_residence)) +
 
 p13
 ```
+
+## 6.2 Total variations-Distanzmatrix: Wie ähnlich sind die Jahre bezüglich Zielort-Verteilung?
+
+Um zu prüfen, ob sich die Zielorte nach Leerkündigung über die Zeit nur in der Menge, aber auch in der **Struktur** (Komposition) verändern, berechne ich für jedes Jahr die Verteilung der Kategorien `new_residence` als **Anteile**.
+
+Für jedes Jahr \(t\) ergibt sich ein Vektor \(p^{(t)} = (p_1^{(t)}, \dots, p_K^{(t)})\), wobei \(p_i^{(t)}\) der Anteil der Betroffenen ist, die im Zielort \(i\) landen (Summe über alle Zielorte = 1).
+
+Als Distanzmass verwende ich die **Total-Variation-Distanz (TV)** zwischen zwei Verteilungen \(p\) und \(q\):
+
+\[
+TV(p, q) \;=\; \frac{1}{2}\sum_{i=1}^{K} |p_i - q_i|
+\]
+
+**Interpretation:**
+- \(TV = 0\): die beiden Jahre haben **identische** Zielort-Verteilungen.
+- Je grösser \(TV\), desto **stärker** unterscheiden sich die Kompositionen.
+- \(TV\) liegt immer zwischen 0 und 1. Als Faustregel: ein \(TV\) von 0.10 bedeutet, dass man insgesamt etwa 10 Prozentpunkte „Masse“ zwischen Kategorien verschieben müsste, um die eine Verteilung in die andere zu überführen.
+
+Die resultierende paarweise Distanzmatrix über alle Jahre visualisiere ich als Heatmap: dunklere Felder markieren Jahre, deren Zielort-Verteilungen sich deutlich unterscheiden; helle Felder markieren ähnliche Jahre.
+
+```{r vergleich distance matrix jahre}
+
+shares <- df %>%
+  group_by(year, new_residence) %>%
+  summarise(x = sum(count, na.rm = TRUE), .groups = "drop") %>%
+  group_by(year) %>%
+  mutate(p = x / sum(x)) %>%
+  ungroup() %>%
+  select(year, new_residence, p) %>%
+  pivot_wider(names_from = new_residence, values_from = p, values_fill = 0) %>%
+  arrange(year)
+
+years <- shares$year
+M <- as.matrix(dplyr::select(shares, -year))
+
+# Total Variation (TV) = 0.5 * L1 (Manhattan) distance between share vectors
+D <- as.matrix(dist(M, method = "manhattan")) * 0.5
+dimnames(D) <- list(years, years)
+
+p4b_data <- as.data.frame(as.table(D)) %>%
+  rename(y1 = Var1, y2 = Var2, tv = Freq)
+
+p4b <- ggplot(p4b_data, aes(y2, y1, fill = tv)) +
+  geom_tile() +
+  labs(title = "TV-Distanzmatrix der Jahre (0 = identisch)", x = "Jahr", y = "Jahr")
+
+p4b
+
+```
+
+
+## Appendix A2: Methodische Hinweise
+
 
 # Appendix B: Session Information
 

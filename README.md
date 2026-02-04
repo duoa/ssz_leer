@@ -1,15 +1,10 @@
-# Zurich Leerkündigungen Analysis
+# Zürich Leerkündigungen Analysis
 
-Reproducible analysis of Zurich "Leerkündigungen" (eviction notices due to building refurbishment) using Open Government Data.
+Reproducible analysis of Zürich "Leerkündigungen" (eviction notices due to building refurbishment) using Open Government Data.
 
 ## Overview
 
-This project provides a self-contained, reproducible analysis of Leerkündigungen in Zurich, focusing on:
-
-- **Clear group differences**: Age group patterns in residence outcomes
-- **Surprising patterns**: Temporal composition shifts
-- **Transparent methodology**: Explicit definitions and mappings
-- **Statistical validation**: Chi-square test with effect size
+This project provides a self-contained, reproducible analysis of Leerkündigungen in Zurich.
 
 ## Quick Start
 
@@ -19,7 +14,7 @@ This project provides a self-contained, reproducible analysis of Leerkündigunge
 # Clone and checkout feature branch
 git clone <repository-url>
 cd leer
-git checkout 001-leerkuendigungen-analysis
+git checkout main
 
 # Restore R dependencies
 R -e "renv::restore()"
@@ -38,7 +33,6 @@ open output/leerkuendigungen_report.html
 docker build -t leerkuendigungen-analysis -f docker/Dockerfile .
 
 
-
 # Run analysis
 docker run --rm -v $(pwd)/output:/analysis/output leerkuendigungen-analysis
 
@@ -49,7 +43,7 @@ open output/leerkuendigungen_report.html
 ### Option 3: GitHub Actions
 
 1. Go to **Actions** tab on GitHub
-2. Select **"Run Leerkuendigungen Analysis"** workflow
+2. Select **"Bitte generiere Analysebericht"** workflow
 3. Click **"Run workflow"**
 4. Download artifact when complete
 
@@ -82,7 +76,7 @@ leer/
 
 ## Requirements
 
-- **R**: Version 4.3 or higher
+- **R**: Version 4.5 or higher
 - **Docker**: Version 20.10+ (for containerized execution)
 - **Internet connection**: Required to download dataset at runtime
 
