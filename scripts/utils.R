@@ -7,6 +7,7 @@ FIELD_MAPPINGS <- list(
   year = "StichtagDatJahr",
   age_group = "AlterV20Lang",
   new_residence = "WohnortLeerkuendigungLang_noDM",
+  new_residence_sort = "WohnortLeerkuendigungSort_noDM",
   count = "AnzBestWir"
 )
 
@@ -31,6 +32,7 @@ map_fields <- function(df) {
       year = !!FIELD_MAPPINGS$year,
       age_group = !!FIELD_MAPPINGS$age_group,
       new_residence = !!FIELD_MAPPINGS$new_residence,
+      new_residence_sort = !!FIELD_MAPPINGS$new_residence_sort,
       count = !!FIELD_MAPPINGS$count
     )
   

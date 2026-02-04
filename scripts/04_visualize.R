@@ -170,3 +170,58 @@ plot_unknown_concentration <- function(unknown_summary) {
   return(p)
 }
 
+#' Create heatmap of standardized residua (R) for age_group vs. new_residence.
+#'
+#' @param Rlong Long-format data frame of standardized residua, with factor columns
+#'        `age_group` and `new_residence` already correctly ordered.
+#' @return ggplot object
+#' @export
+plot_standardized_residua <- function(Rlong) {
+  p <- ggplot(Rlong, aes(new_residence, age_group, fill = resid)) +
+    geom_tile() +
+    labs(
+      title = "Standardisierte Residuen: Alter × Zielort",
+      subtitle = "R = (O − E) / sqrt(E); >0 über-, <0 unterrepräsentiert",
+      x = "Zielort (new_residence)",
+      y = "Altersgruppe",
+      fill = "Residuum"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      plot.title = element_text(face = "bold", size = 14),
+      plot.subtitle = element_text(color = "gray40")
+    ) +
+    scale_fill_gradient2(low = "blue", mid = "white", high = "red")
+  
+  return(p)
+}
+
+#' Create heatmap of log2(Relative Risk) for age_group vs. new_residence.
+#'
+#' @param log2RR_long Long-format data frame of log2(Relative Risk), with factor columns
+#'        `age_group` and `new_residence` already correctly ordered.
+#' @param cap Numeric value used to clip the log2RR scale for visualization.
+#' @return ggplot object
+#' @export
+plot_log2_relative_risk <- function(log2RR_long, cap = 2.5) {
+  p <- ggplot(log2RR_long, aes(new_residence, age_group, fill = log2RR)) +
+    geom_tile() +
+    labs(
+      title = "log2(Relativrisiko): Über-/Unterrepräsentation Alter × Zielort",
+      subtitle = "0 = durchschnittlich; +1 ≈ 2×; −1 ≈ 0.5× (Farbskala gekappt)",
+      x = "Zielort (new_residence)",
+      y = "Altersgruppe",
+      fill = "log2(RR)"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      plot.title = element_text(face = "bold", size = 14),
+      plot.subtitle = element_text(color = "gray40")
+    ) +
+    scale_fill_distiller(palette = "inferno", direction = 1, limits = c(-cap, cap))
+    
+  return(p)
+}
+

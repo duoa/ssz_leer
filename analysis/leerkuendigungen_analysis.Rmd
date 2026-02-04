@@ -335,186 +335,40 @@ Der Chi-Quadrat-Test deutet auf einen Zusammenhang zwischen Altersgruppe und Zie
 # 6. Verteilungen Zwischen Zielorten und Altersgruppen
 Der globale Chi-Quadrat-Test basiert auf einer binären Klassifikation der Zielorte (innerhalb vs. ausserhalb der Stadt), um einen robusten Gesamteindruck zu erhalten. In einem zweiten Schritt wird diese Kategorie „ausserhalb der Stadt“ weiter aufgeschlüsselt, um zu untersuchen, welche spezifischen Zielorte zu den beobachteten Unterschieden beitragen.
 
-## 6.3 Standardisierte Residuen (Alter × Zielort): Wo liegt der Zusammenhang genau?
-
-Ein globaler Zusammenhang zwischen Altersgruppen und Zielorten ist leicht festzustellen, aber für die Interpretation ist entscheidend: **Welche Kombinationen treiben den Effekt?**  
-Dafür berechne ich für die Kontingenztafel `age_group × new_residence` sogenannte **standardisierte Residuen** (Pearson-Residuen).
-
-Zuerst aggregiere ich die beobachteten Häufigkeiten \(O_{a,r}\) (Summe von `count`) pro Altersgruppe \(a\) und Zielort \(r\).  
-Unter der Nullhypothese **Unabhängigkeit** (Alter und Zielort sind unabhängig) wäre die erwartete Häufigkeit:
-
-\[
-E_{a,r} \;=\; \frac{(\text{Zeilensumme}_a)\,(\text{Spaltensumme}_r)}{\text{Gesamtsumme}}
-\]
-
-Das standardisierte Residuum ist dann:
-
-\[
-R_{a,r} \;=\; \frac{O_{a,r} - E_{a,r}}{\sqrt{E_{a,r}}}
-\]
-
-**Interpretation:**
-- \(R_{a,r} > 0\): diese Kombination tritt **häufiger** auf als bei Unabhängigkeit erwartet (Überrepräsentation).
-- \(R_{a,r} < 0\): diese Kombination tritt **seltener** auf als erwartet (Unterrepräsentation).
-- Je grösser \(|R_{a,r}|\), desto stärker ist die lokale Abweichung (praktisch “Treiber-Zellen” des Zusammenhangs).
-
-Ich visualisiere \(R_{a,r}\) als Heatmap, um die wichtigsten Abweichungen auf einen Blick zu erkennen.
-
-```{r}
-# Todo ordne die columns in der matrix nach distanz, alternativ clustering
-# 1) Beobachtete Kontingenztafel O (age_group × new_residence)
-ct_long <- df %>%
-  group_by(age_group, new_residence) %>%
-  summarise(O = sum(count, na.rm = TRUE), .groups = "drop")
-
-ct <- ct_long %>%
-  pivot_wider(names_from = new_residence, values_from = O, values_fill = 0)
-
-age_labels <- ct$age_group
-O <- as.matrix(select(ct, -age_group))
-
-# 2) Erwartete Häufigkeiten E unter Unabhängigkeit
-row_s <- rowSums(O)
-col_s <- colSums(O)
-grand <- sum(O)
-
-E <- outer(row_s, col_s) / grand
-
-# 3) Standardisierte Residuen R = (O - E) / sqrt(E)
-R <- (O - E) / sqrt(E)
-
-# 4) Für Plot ins Long-Format
-Rdf <- as.data.frame(R)
-Rdf$age_group <- age_labels
-
-Rlong <- Rdf %>%
-  pivot_longer(-age_group, names_to = "new_residence", values_to = "resid") %>%
-  # Optional: Altersgruppen sortieren (falls AlterV20Sort vorhanden)
-  left_join(df %>% distinct(age_group, AlterV20Sort), by = "age_group") %>%
-  arrange(AlterV20Sort) %>%
-  mutate(age_group = fct_inorder(age_group))
-
-# 5) Plot
-ggplot(Rlong, aes(new_residence, age_group, fill = resid)) +
-  geom_tile() +
-  labs(
-    title = "Standardisierte Residuen: Alter × Zielort",
-    subtitle = "R = (O − E) / sqrt(E); >0 über-, <0 unterrepräsentiert",
-    x = "Zielort (new_residence)",
-    y = "Altersgruppe",
-    fill = "Residuum"
-  ) +
-  theme_minimal(base_size = 12) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```{r analyze-age-residence}
+# Prepare data for detailed age x residence analysis
+age_residence_results <- analyze_age_residence_distributions(df)
+Rlong <- age_residence_results$Rlong
+log2RR_long <- age_residence_results$log2RR_long
+O_matrix <- age_residence_results$O_matrix # Use the raw matrix for 6.5
 ```
 
+## 6.3 Standardisierte Residuen (Alter × Zielort): Wo liegt der Zusammenhang genau?
+Die Heatmap zeigt pro Kombination aus Altersgruppe und Zielort standardisierte Residuen. Werte > 0 (rot) bedeuten, dass diese Kombination häufiger beobachtet wird als unter der Annahme von Unabhängigkeit zu erwarten wäre; Werte < 0 (blau) entsprechend seltener. Auffällig ist, dass 20–39-Jährige beim Zielort „gleiches Stadtquartier“ deutlich unterrepräsentiert sind, während sie bei „übrige Schweiz“ und „Ausland“ überrepräsentiert sind. Bei 60–79-Jährigen zeigt sich dagegen eine Überrepräsentation im gleichen Stadtquartier. Zudem ist die Kategorie „Unbekannt“ bei den 80–99-Jährigen stark überrepräsentiert; dies ist primär als Hinweis auf mögliche Unterschiede in der Abdeckung bzw. Zuordenbarkeit der Zielort-Information zu lesen.
+
+```{r fig-residua-heatmap, fig.cap="Standardisierte Residuen: Alter × Zielort", message=FALSE, warning=FALSE}
+# Rlong data is prepared in the previous chunk.
+# Note: the data preparation logic in the new analyze_function handles the ordering.
+plot_standardized_residua(Rlong)
+```
 
 
 # 6.4 log2(Relativrisiko) (Alter × Zielort): Über-/Unterrepräsentation verständlich quantifizieren
 
-Die standardisierten Residuen (Figure 6) zeigen, **wo** Alter und Zielort voneinander abweichen. Für eine noch intuitivere Interpretation berechne ich zusätzlich ein **Relativrisiko** (RR) pro Kombination aus Altersgruppe und Zielort.
+Diese Heatmap ergänzt die Residuen, indem sie die Abweichungen als log2(Relativrisiko) darstellt. Ein Wert von 0 bedeutet „entspricht dem Gesamtdurchschnitt“. Positive Werte zeigen, dass ein Zielort innerhalb einer Altersgruppe überdurchschnittlich häufig vorkommt, negative Werte entsprechend unterdurchschnittlich häufig. Die Farbskala ist gekappt, damit einzelne extreme Zellen die Lesbarkeit nicht dominieren.
 
-Dazu vergleiche ich:
-- den Anteil eines Zielorts **innerhalb** einer Altersgruppe, und
-- den Anteil desselben Zielorts **im Gesamtdatensatz**.
+In den Daten fällt insbesondere auf, dass 20–39-Jährige im Vergleich zum Gesamtdurchschnitt häufiger in den Kategorien „übrige Schweiz“ und „Ausland“ erscheinen und seltener im „gleichen Stadtquartier“. Zudem sticht „Unbekannt“ bei den 80–99-Jährigen klar hervor; das ist vor allem als Hinweis auf Unterschiede in der Abdeckung/Zuordenbarkeit der Zielort-Information zu verstehen
 
-Für Altersgruppe \(a\) und Zielort \(r\) gilt:
-
-\[
-\text{row\_share}_{a,r} = \frac{O_{a,r}}{\sum_{r} O_{a,r}},
-\quad
-\text{overall\_share}_{r} = \frac{\sum_{a} O_{a,r}}{\sum_{a,r} O_{a,r}}
-\]
-
-\[
-RR_{a,r} = \frac{\text{row\_share}_{a,r}}{\text{overall\_share}_{r}}
-\]
-
-Zur Darstellung verwende ich \(\log_2(RR)\), weil es symmetrisch interpretierbar ist:
-
-- \(\log_2(RR)=0\): genau durchschnittlich (keine Über-/Unterrepräsentation)
-- \(\log_2(RR)=+1\): etwa **2×** häufiger als im Durchschnitt
-- \(\log_2(RR)=-1\): etwa **0.5×** so häufig wie im Durchschnitt
-
-Ich visualisiere \(\log_2(RR)\) als Heatmap. Sehr kleine oder sehr grosse Werte können aus kleinen Zellen entstehen; daher ist es sinnvoll, die Farbskala moderat zu begrenzen (Clipping), damit die Grafik lesbar bleibt.
-
-```{r fig-log2rr-heatmap, message=FALSE, warning=FALSE}
-
-cap <- 2.5  # Farbskala begrenzen: +/- 2.5 ~ max ca. 5.7x hoch/runter
-
-# 1) Beobachtete Häufigkeiten O (age_group × new_residence)
-ct <- df %>%
-  group_by(age_group, new_residence) %>%
-  summarise(O = sum(count, na.rm = TRUE), .groups = "drop") %>%
-  pivot_wider(names_from = new_residence, values_from = O, values_fill = 0)
-
-ages <- ct$age_group
-O <- as.matrix(select(ct, -age_group))
-
-# 2) row_share: Anteil Zielort innerhalb Altersgruppe
-row_share <- O / rowSums(O)
-
-# 3) overall_share: Gesamtanteil Zielort
-overall_share <- colSums(O) / sum(O)
-
-# 4) Relativrisiko RR = row_share / overall_share
-RR <- sweep(row_share, 2, overall_share, "/")
-
-# 5) log2(RR) + Clipping für Lesbarkeit
-log2RR <- log2(RR)
-log2RR[is.infinite(log2RR)] <- NA
-log2RR <- pmax(pmin(log2RR, cap), -cap)
-
-# 6) Long-Format für Heatmap
-log2RR_df <- as.data.frame(log2RR)
-log2RR_df$age_group <- ages
-
-long <- log2RR_df %>%
-  pivot_longer(-age_group, names_to = "new_residence", values_to = "log2RR") %>%
-  # Optional: Altersgruppen sortieren, falls AlterV20Sort existiert
-  left_join(df %>% distinct(age_group, AlterV20Sort), by = "age_group") %>%
-  arrange(AlterV20Sort) %>%
-  mutate(age_group = fct_inorder(age_group))
-
-# 7) Plot
-ggplot(long, aes(new_residence, age_group, fill = log2RR)) +
-  geom_tile() +
-  labs(
-    title = "log2(Relativrisiko): Über-/Unterrepräsentation Alter × Zielort",
-    subtitle = "0 = durchschnittlich; +1 ≈ 2×; −1 ≈ 0.5× (Farbskala gekappt)",
-    x = "Zielort (new_residence)",
-    y = "Altersgruppe",
-    fill = "log2(RR)"
-  ) +
-  theme_minimal(base_size = 12) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
-  scale_fill_distiller(palette = "inferno", direction = 1)
-```
-
-
-# 6.5
-
-```{r}
-```{r global-test-age-vs-destination, message=FALSE, warning=FALSE}
-# Kontingenztafel: Altersgruppe × Zielort (gewichtete Counts)
-tab <- xtabs(count ~ age_group + new_residence, data = df)
-
-# Globaler χ²-Unabhängigkeitstest
-chi <- chisq.test(tab)
-chi
-
-# Effektgrösse: Cramér's V
-V <- sqrt(as.numeric(chi$statistic) / (sum(tab) * (min(nrow(tab)-1, ncol(tab)-1))))
-V
-
+```{r fig-log2rr-heatmap, message=FALSE, warning=FALSE, fig.cap="log2(Relativrisiko): Abweichung vom Gesamtdurchschnitt nach Altersgruppe und Zielort"}
+# log2RR_long data is prepared in the previous chunk.
+plot_log2_relative_risk(log2RR_long, cap = 2.5)
 ```
 
 
 # 7. Limitationen
+
 - Ohne Bezug zur Altersstruktur der Gesamtbevölkerung können wir nicht beurteilen, ob bestimmte Altersgruppen über- oder unterproportional betroffen sind.
 - Der Datensatz erfasst nur Personen mit gemeldeter Leerkündigung und nicht nicht alle Umzüge.
-
-
 
 
 # Appendix:
@@ -525,12 +379,16 @@ V
 
 # Aggregieren nach alter und wohnort
 p13_data <- df %>%
-  group_by(age_group, AlterV20Sort, new_residence) %>%
+  # new_residence_sort zur Gruppierung hinzu, um die Sortierreihenfolge zu erhalten
+  group_by(age_group, AlterV20Sort, new_residence, new_residence_sort) %>%
   summarise(x = sum(count, na.rm = TRUE), .groups = "drop") %>%
   group_by(age_group, AlterV20Sort) %>%
   mutate(share = x / sum(x)) %>%
   ungroup() %>%
-  # Altersgruppen sauber sortieren
+  # new_residence sortieren und als Factor festlegen
+  arrange(new_residence_sort) %>%
+  mutate(new_residence = fct_inorder(new_residence)) %>%
+  # 2. Altersgruppen sortieren 
   arrange(AlterV20Sort) %>%
   mutate(age_group = fct_inorder(age_group))
 
@@ -604,6 +462,30 @@ p4b
 
 
 ## Appendix A2: Methodische Hinweise
+Standardisierte Residuen (Alter × Zielort): Wo liegt der Zusammenhang genau?
+
+Ein globaler Zusammenhang zwischen Altersgruppen und Zielorten ist leicht festzustellen, aber für die Interpretation ist entscheidend: **Welche Kombinationen treiben den Effekt?**  
+Dafür berechne ich für die Kontingenztafel `age_group × new_residence` sogenannte **standardisierte Residuen** (Pearson-Residuen).
+
+Zuerst aggregiere ich die beobachteten Häufigkeiten \(O_{a,r}\) (Summe von `count`) pro Altersgruppe \(a\) und Zielort \(r\).  
+Unter der Nullhypothese **Unabhängigkeit** (Alter und Zielort sind unabhängig) wäre die erwartete Häufigkeit:
+
+\[
+E_{a,r} \;=\; \frac{(\text{Zeilensumme}_a)\,(\text{Spaltensumme}_r)}{\text{Gesamtsumme}}
+\]
+
+Das standardisierte Residuum ist dann:
+
+\[
+R_{a,r} \;=\; \frac{O_{a,r} - E_{a,r}}{\sqrt{E_{a,r}}}
+\]
+
+**Interpretation:**
+- \(R_{a,r} > 0\): diese Kombination tritt **häufiger** auf als bei Unabhängigkeit erwartet (Überrepräsentation).
+- \(R_{a,r} < 0\): diese Kombination tritt **seltener** auf als erwartet (Unterrepräsentation).
+- Je grösser \(|R_{a,r}|\), desto stärker ist die lokale Abweichung (praktisch “Treiber-Zellen” des Zusammenhangs).
+
+Ich visualisiere \(R_{a,r}\) als Heatmap, um die wichtigsten Abweichungen auf einen Blick zu erkennen.
 
 
 # Appendix B: Session Information

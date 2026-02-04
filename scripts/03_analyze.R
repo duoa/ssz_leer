@@ -2,6 +2,7 @@
 
 library(dplyr)
 library(tidyr)
+library(forcats)
 
 #' Analyze time changes
 #' How does the total affected count change over time?
@@ -279,4 +280,90 @@ analyze_unknown_concentration <- function(df) {
     min_age_group = min_age_group,
     min_share = min_share
   ))
+}
+
+#' Analyze age and new residence distributions using Standardized Residua and log2(Relative Risk).
+#'
+#' This function calculates the contingency table, standardized residua (R), and
+#' log2(Relative Risk) for the Age × New Residence distribution. It ensures
+#' correct factor ordering for both age_group (using AlterV20Sort) and
+#' new_residence (using new_residence_sort) for visualization readiness.
+#'
+#' @param df Data frame with age_group, new_residence, count, AlterV20Sort, and new_residence_sort columns.
+#' @return List with:
+#'         - Rlong: Long-format data frame of standardized residua (R).
+#'         - log2RR_long: Long-format data frame of log2(Relative Risk) (log2RR).
+#'         - ct: The contingency table (age_group x new_residence).
+#' @export
+analyze_age_residence_distributions <- function(df) {
+  # 1) Prepare distinct sort mappings
+  residence_sort_map <- df %>%
+    distinct(new_residence, new_residence_sort) %>%
+    arrange(new_residence_sort)
+  
+  age_sort_map <- df %>%
+    distinct(age_group, AlterV20Sort) %>%
+    arrange(AlterV20Sort)
+  
+  # 2) Calculate Contingency Table O (age_group × new_residence)
+  ct_long <- df %>%
+    group_by(age_group, new_residence) %>%
+    summarise(O = sum(count, na.rm = TRUE), .groups = "drop")
+
+  ct <- ct_long %>%
+    pivot_wider(names_from = new_residence, values_from = O, values_fill = 0)
+  
+  age_labels <- ct$age_group
+  O <- as.matrix(select(ct, -age_group))
+  
+  # 3) Calculate Expected Frequencies E under Unabhängigkeit
+  row_s <- rowSums(O)
+  col_s <- colSums(O)
+  grand <- sum(O)
+  E <- outer(row_s, col_s) / grand
+  
+  # 4) Calculate Standardized Residuen R = (O - E) / sqrt(E)
+  R <- (O - E) / sqrt(E)
+  
+  # 5) Calculate log2(Relative Risk) RR
+  # row_share: Anteil Zielort innerhalb Altersgruppe
+  row_share <- O / rowSums(O)
+  # overall_share: Gesamtanteil Zielort
+  overall_share <- colSums(O) / sum(O)
+  # Relativrisiko RR = row_share / overall_share
+  RR <- sweep(row_share, 2, overall_share, "/")
+  log2RR <- log2(RR)
+  log2RR[is.infinite(log2RR)] <- NA
+  
+  # 6) Convert R to Long-Format (Rlong)
+  Rdf <- as.data.frame(R)
+  Rdf$age_group <- age_labels
+  
+  Rlong <- Rdf %>%
+    pivot_longer(-age_group, names_to = "new_residence", values_to = "resid") %>%
+    # Order factors using the sort maps and fct_inorder
+    left_join(age_sort_map, by = "age_group") %>%
+    left_join(residence_sort_map, by = "new_residence") %>%
+    arrange(AlterV20Sort) %>%
+    mutate(age_group = fct_inorder(age_group)) %>%
+    arrange(new_residence_sort) %>%
+    mutate(new_residence = fct_inorder(new_residence)) %>%
+    select(-AlterV20Sort, -new_residence_sort)
+  
+  # 7) Convert log2RR to Long-Format (log2RR_long)
+  log2RR_df <- as.data.frame(log2RR)
+  log2RR_df$age_group <- age_labels
+  
+  log2RR_long <- log2RR_df %>%
+    pivot_longer(-age_group, names_to = "new_residence", values_to = "log2RR") %>%
+    # Order factors using the sort maps and fct_inorder
+    left_join(age_sort_map, by = "age_group") %>%
+    left_join(residence_sort_map, by = "new_residence") %>%
+    arrange(AlterV20Sort) %>%
+    mutate(age_group = fct_inorder(age_group)) %>%
+    arrange(new_residence_sort) %>%
+    mutate(new_residence = fct_inorder(new_residence)) %>%
+    select(-AlterV20Sort, -new_residence_sort)
+  
+  return(list(Rlong = Rlong, log2RR_long = log2RR_long, ct = ct))
 }
