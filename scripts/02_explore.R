@@ -1,18 +1,21 @@
 # Exploratory Analysis Functions for Zurich Leerkündigungen Analysis
 # This file contains functions for data exploration and sanity checks
+# Reviewed: Angelo Duò, 03-02-2026
 
 library(dplyr)
 
 #' Get time range from dataset
 #'
 #' @param df Data frame with year column
+#' @param na_rm default is TRUE
+
 #' @return List with earliest and latest year
 #' @export
-get_time_range <- function(df) {
+get_time_range <- function(df, na_rm = TRUE) {
   list(
-    earliest = min(df$year, na.rm = TRUE),
-    latest = max(df$year, na.rm = TRUE),
-    span = max(df$year, na.rm = TRUE) - min(df$year, na.rm = TRUE) + 1
+    earliest = min(df$year, na.rm = na_rm),
+    latest = max(df$year, na.rm = na_rm),
+    span = max(df$year, na.rm = na_rm) - min(df$year, na.rm = na_rm) + 1
   )
 }
 
@@ -49,6 +52,7 @@ get_residence_categories <- function(df) {
 #' @return List with exists flag and share (if exists)
 #' @export
 check_unknown_category <- function(df) {
+  # todo just simplify and make a table or similar
   has_unknown <- any(grepl("Unbekannt|Unknown", df$new_residence, ignore.case = TRUE))
   
   if (has_unknown) {
@@ -137,7 +141,6 @@ detect_anomalies <- function(df) {
 #' @return List with all exploration results
 #' @export
 explore_dataset <- function(df) {
-  cat("=== EXPLORATION PHASE ===\n\n")
   
   # Time range
   time_range <- get_time_range(df)
@@ -196,9 +199,7 @@ explore_dataset <- function(df) {
   } else {
     cat("No obvious anomalies detected\n")
   }
-  
-  cat("\n=== EXPLORATION COMPLETE ===\n\n")
-  
+    
   # Return structured results
   return(list(
     time_range = time_range,

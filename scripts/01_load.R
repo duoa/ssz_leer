@@ -1,5 +1,7 @@
 # Data Loading and Validation for Zurich Leerkündigungen Analysis
 # This file contains functions to download, load, and validate the dataset
+# Reviewed: Angelo Duò, 03-02-2026
+ 
 
 library(readr)
 library(dplyr)
@@ -86,12 +88,12 @@ validate_dataset <- function(df) {
   )
   cat("✓ Sufficient residence categories:", n_residence_cats, "\n")
   
-  # 6. Check sufficient temporal coverage
+  # 6. Check sufficient years
   n_years <- length(unique(df$StichtagDatJahr))
   stopifnot(
     "Insufficient years for temporal analysis" = n_years >= 3
   )
-  cat("✓ Sufficient temporal coverage:", n_years, "years\n")
+  cat("✓ Sufficient years:", n_years, "years\n")
   
   # 7. Check dataset is not empty
   stopifnot(
@@ -112,7 +114,7 @@ validate_dataset <- function(df) {
   # 9. Check total count is reasonable
   total_count <- sum(df$AnzBestWir, na.rm = TRUE)
   stopifnot(
-    "Total count is zero or unreasonably small" = total_count > 0
+    "Total count is zero " = total_count > 0
   )
   cat("✓ Total affected persons:", format(total_count, big.mark = ","), "\n")
   

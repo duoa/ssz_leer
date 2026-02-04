@@ -4,13 +4,13 @@
 library(dplyr)
 library(tidyr)
 
-#' Q1: Analyze time dynamics
+#' Analyze time changes
 #' How does the total affected count change over time?
 #'
 #' @param df Data frame with year and count columns
 #' @return List with temporal analysis results
 #' @export
-analyze_time_dynamics <- function(df) {
+analyze_time_change <- function(df) {
   # Aggregate by year
   temporal_summary <- df %>%
     group_by(year) %>%
@@ -20,35 +20,16 @@ analyze_time_dynamics <- function(df) {
     ) %>%
     arrange(year)
   
-  # Identify peak year(s)
+  # Identify peak year
   max_count <- max(temporal_summary$total_affected)
   peak_years <- temporal_summary %>%
     filter(total_affected == max_count) %>%
     pull(year)
   
-  # Describe temporal pattern
-  # Calculate year-over-year changes
-  temporal_summary <- temporal_summary %>%
-    mutate(
-      yoy_change = total_affected - lag(total_affected),
-      yoy_pct_change = (total_affected - lag(total_affected)) / lag(total_affected)
-    )
-  
-  # Determine pattern type
-  avg_change <- mean(abs(temporal_summary$yoy_change), na.rm = TRUE)
-  sd_change <- sd(temporal_summary$yoy_change, na.rm = TRUE)
-  
-  if (sd_change / avg_change > 0.5) {
-    pattern <- "wave-like (high variability)"
-  } else {
-    pattern <- "relatively stable"
-  }
-  
   return(list(
     temporal_summary = temporal_summary,
     peak_years = peak_years,
-    peak_count = max_count,
-    pattern = pattern
+    peak_count = max_count
   ))
 }
 

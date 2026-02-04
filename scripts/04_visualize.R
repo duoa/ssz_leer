@@ -15,7 +15,7 @@ CB_PALETTE <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442",
 #' @param peak_years Vector of peak years to highlight
 #' @return ggplot object
 #' @export
-plot_temporal_dynamics <- function(temporal_summary, peak_years = NULL) {
+plot_persons_per_time <- function(temporal_summary) {
   p <- ggplot(temporal_summary, aes(x = year, y = total_affected)) +
     geom_line(color = CB_PALETTE[5], size = 1.2) +
     geom_point(color = CB_PALETTE[5], size = 3) +
@@ -32,19 +32,7 @@ plot_temporal_dynamics <- function(temporal_summary, peak_years = NULL) {
       plot.subtitle = element_text(color = "gray40"),
       panel.grid.minor = element_blank()
     )
-  
-  # Highlight peak years if provided
-  if (!is.null(peak_years) && length(peak_years) > 0) {
-    peak_data <- temporal_summary %>%
-      filter(year %in% peak_years)
-    
-    p <- p +
-      geom_point(data = peak_data, 
-                 aes(x = year, y = total_affected),
-                 color = CB_PALETTE[6], size = 5, shape = 21, 
-                 fill = CB_PALETTE[6], stroke = 2)
-  }
-  
+
   return(p)
 }
 

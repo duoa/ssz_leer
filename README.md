@@ -34,8 +34,10 @@ open output/leerkuendigungen_report.html
 ### Option 2: Docker
 
 ```bash
-# Build image
+# Build image:  docker build --platform=linux/amd64 -t leerkuendigungen-analysis -f docker/Dockerfile . for linux build
 docker build -t leerkuendigungen-analysis -f docker/Dockerfile .
+
+
 
 # Run analysis
 docker run --rm -v $(pwd)/output:/analysis/output leerkuendigungen-analysis
