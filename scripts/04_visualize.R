@@ -220,7 +220,7 @@ plot_log2_relative_risk <- function(log2RR_long, cap = 2.5) {
       plot.title = element_text(face = "bold", size = 14),
       plot.subtitle = element_text(color = "gray40")
     ) +
-    scale_fill_distiller(palette = "inferno", direction = 1, limits = c(-cap, cap))
+    scale_fill_gradient2(low = "blue", mid = "white", high = "red")
     
   return(p)
 }
