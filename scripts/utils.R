@@ -42,39 +42,20 @@ map_fields <- function(df) {
   
   return(df_mapped)
 }
-
+# bis hier gereviewt
 #' Calculate Cramér's V effect size for chi-square test
 #'
 #' @param chi_result Result object from chisq.test()
-#' @param n Total sample size
-#' @return Cramér's V value (0 to 1)
+#' @param contingency_table
+#' @return Cramér's V value, bound by  0 and 1
 #' @export
-cramers_v <- function(chi_result, n) {
-  chi_stat <- chi_result$statistic
-  df <- min(chi_result$parameter)  # Degrees of freedom
-  
-  # Calculate Cramér's V
-  v <- sqrt(chi_stat / (n * df))
-  
-  return(as.numeric(v))
+cramers_v <- function(chi_result, contingency_table) {
+  chi_stat <- as.numeric(chi_result$statistic)
+  n <- sum(contingency_table)
+  k <- min(nrow(contingency_table) - 1, ncol(contingency_table) - 1)
+  sqrt(chi_stat / (n * k))
 }
 
-#' Interpret Cramér's V effect size
-#'
-#' @param v Cramér's V value
-#' @return Character string with interpretation
-#' @export
-interpret_cramers_v <- function(v) {
-  if (v < 0.1) {
-    return("negligible")
-  } else if (v < 0.3) {
-    return("small")
-  } else if (v < 0.5) {
-    return("medium")
-  } else {
-    return("large")
-  }
-}
 
 #' Check if Unknown category exists in the data
 #'
