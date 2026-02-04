@@ -3,6 +3,7 @@
 .Rhistory
 .RData
 .Ruserdata
+.DS_Store
 
 # renv
 renv/library/
@@ -32,3 +33,4 @@ Thumbs.db
 
 # Setup script (temporary)
 setup_renv.R
+
