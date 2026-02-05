@@ -43,6 +43,11 @@ plot_persons_per_time <- function(temporal_summary) {
 #' @return ggplot object
 #' @export
 plot_composition_shift <- function(composition_summary) {
+  # Ensure stacking order is determined by new_residence_sort
+  composition_summary <- composition_summary %>%
+    arrange(new_residence_sort) %>%
+    mutate(new_residence = forcats::fct_inorder(new_residence))
+
   # Create stacked area chart
   p <- ggplot(composition_summary, aes(x = year, y = share, fill = new_residence)) +
     geom_area(alpha = 0.7) +
@@ -76,7 +81,7 @@ plot_composition_shift <- function(composition_summary) {
 #' @export
 plot_age_gradient <- function(age_summary) {
   p <- ggplot(age_summary, aes(x = reorder(age_group, within_city_share),
-                              y = within_city_share)) +
+                               y = within_city_share)) +
     geom_col(fill = CB_PALETTE[3], alpha = 0.8) +
     geom_text(aes(label = paste0(round(within_city_share * 100, 1), "%")),
               hjust = -0.2, size = 4) +
@@ -224,4 +229,3 @@ plot_log2_relative_risk <- function(log2RR_long, cap = 2.5) {
     
   return(p)
 }
-

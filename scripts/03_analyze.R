@@ -42,7 +42,7 @@ analyze_time_change <- function(df) {
 analyze_composition_shift <- function(df) {
   # Calculate residence shares by year
   composition_summary <- df %>%
-    group_by(year, new_residence) %>%
+    group_by(year, new_residence, new_residence_sort) %>%
     summarise(count = sum(count, na.rm = TRUE), .groups = "drop") %>%
     group_by(year) %>%
     mutate(
@@ -365,5 +365,12 @@ analyze_age_residence_distributions <- function(df) {
     mutate(new_residence = fct_inorder(new_residence)) %>%
     select(-AlterV20Sort, -new_residence_sort)
   
-  return(list(Rlong = Rlong, log2RR_long = log2RR_long, ct = ct))
+  # DEBUG: Log matrix dimensions and content
+  cat("DEBUG: O matrix dimensions:", dim(O), "\n")
+  cat("DEBUG: O matrix sum:", sum(O), "\n")
+  cat("DEBUG: O matrix has positive values:", any(O > 0), "\n")
+  cat("DEBUG: ct data frame dimensions:", dim(ct), "\n")
+  cat("DEBUG: ct column names:", paste(names(ct), collapse = ", "), "\n")
+  
+  return(list(Rlong = Rlong, log2RR_long = log2RR_long, ct = ct, O_matrix = O))
 }

@@ -159,96 +159,6 @@ knitr::kable(unknown_tbl, caption = "Übersicht zur Kategorie 'Unbekannt'")
 
 ```
 
----
-
-# 4. Analyse
-
-## 4.1 Veränderung über die Zeit
-
-```{r zeit-analysis}
-time_results <- analyze_time_change(df)
-```
-
-Die folgende Auswertung zeigt, wie sich die Gesamtzahl betroffener Personen im Zeitverlauf entwickelt. Der Höchstwert liegt im Jahr/den Jahren `r paste(time_results$peak_years, collapse = ", ")` mit `r format(time_results$peak_count, big.mark = ",")` betroffen. Es gibt eine Zunahme bis ins Jahr 2017, mit eineme Ausreiiser in 2015. Nachher folgt eine abnahme und stabilisierung der Leerkuendigungen.
-
-```{r q1-visualization, fig.cap="Betroffene Personen über die Zeit"}
-plot_persons_per_time(time_results$temporal_summary)
-```
-
----
-
-## 4.2 Verteilung der Zielorte
-
-Die folgende Darstellung zeigt die Verteilung der Zielorte nach einer Leerkündigung über die Jahre. Das Jahr 2010 scheint ein ausreisser zu sein, wahrend es sonst, ueber alle gruppen gesehen, stabil ist. # Todo testen, deviant year teil wegnehmen in residence result
-
-```{r zielorte-analysis}
-residence_results <- analyze_composition_shift(df)
-
-```
-
-```{r q2-visualization, fig.cap="Residence composition over time"}
-plot_composition_shift(residence_results$composition_summary)
-```
-
-
----
-
-## 4.3 Aenderung nach Altersgruppe
-
-```{r q3-analysis}
-# Für diese Auswertung wird die Kategorie "Unbekannt" ausgeschlossen
-df_known <- filter_unknown(df)
-q3_results <- analyze_age_gradient(df_known)
-```
-
-Die Auswertung zeigt Unterschiede zwischen den Altersgruppen innerhalb der Stadt Zürich zu bleiben. Den höchsten Anteil «innerhalb der Stadt» hat `r q3_results$max_age_group` mit `r round(q3_results$max_share * 100, 1)`%, den niedrigsten `r q3_results$min_age_group` mit `r round(q3_results$min_share * 100, 1)` %. Das entspricht einer Differenz von `r round(q3_results$contrast * 100, 1)` Prozentpunkten.
-
-```{r q3-visualization, fig.cap="Within-city share by age group"}
-plot_age_gradient(q3_results$age_summary)
-```
-
-```{r q3-table}
-q3_table <- q3_results$age_summary %>%
-  mutate(
-    `Anteil innerhalb der Stadt` = paste0(round(within_city_share * 100, 1), "%"),
-    `Total` = format(total_count, big.mark = ",")
-  ) %>%
-  select(`Altersgruppe` = age_group, `Anteil innerhalb der Stadt`, `Total`)
-
-kable(q3_table, caption = "Anteil innerhalb der Stadt nach Altersgruppe", align = c("l", "r", "r"))
-```
-
-
----
-
-## 4.4 Verbleib im gleichen Stadtquartier
-
-```{r q4-analysis}
-# Todo zeige einfach die same share im selben quartier, allenfalls mache ienen test
-q4_results <- analyze_same_quarter(df)
-```
-
-Anteil der betroffenen Personen, die nach einer Leerkündigung im gleichen Stadtquartier bleiben (falls diese Kategorie im Datensatz vorhanden ist). Den höchsten Anteil weist `r q4_results$max_age_group` mit `r round(q4_results$max_share * 100, 1)`% auf, den niedrigsten `r q4_results$min_age_group` mit `r round(q4_results$min_share * 100, 1)`%. Das entspricht einer Differenz von `r round(q4_results$contrast * 100, 1)` Prozentpunkten.
-
-```{r q4-visualization, eval=q4_results$applicable}
-plot_same_quarter(q4_results$same_quarter_summary)
-```
-
-```{r q4-table, eval=q4_results$applicable}
-q4_table <- q4_results$same_quarter_summary %>%
-  mutate(
-    `Anteil gleiches Stadtquartier` = paste0(round(same_quarter_share * 100, 1), "%"),
-    `Anzahl (gleiches Stadtquartier)` = format(same_quarter_count, big.mark = ","),
-    `Total` = format(total, big.mark = ",")
-  ) %>%
-  select(`Altersgruppe` = age_group, `Anteil gleiches Stadtquartier`, `Anzahl (gleiches Stadtquartier)`, `Total`)
-
-kable(q4_table, caption = "Anteil im gleichen Stadtquartier nach Altersgruppe", align = c("l", "r", "r", "r"))
-```
-
----
-
-## 4.5 Kategorie „Unbekannt“ nach Altersgruppe
 
 ```{r q5-analysis}
 q5_results <- analyze_unknown_concentration(df)
@@ -277,9 +187,61 @@ kable(q5_table, caption = "Kategorie „Unbekannt“ nach Altersgruppe", align =
 
 ---
 
-# 5. Altersabhängige Unterschiede im Verbleib innerhalb und ausserhalb der Stadt
+# 4. Analyse
 
-## 5.1 Chi-Quadrat-Test
+## 4.1 Veränderung über die Zeit
+
+```{r zeit-analysis}
+time_results <- analyze_time_change(df)
+```
+
+Die folgende Auswertung zeigt, wie sich die Gesamtzahl betroffener Personen im Zeitverlauf entwickelt. Der Höchstwert liegt im Jahr/den Jahren `r paste(time_results$peak_years, collapse = ", ")` mit `r format(time_results$peak_count, big.mark = ",")` betroffen. Es gibt eine Zunahme bis ins Jahr 2017, mit eineme Ausreiiser in 2015. Nachher folgt eine abnahme und stabilisierung der Leerkuendigungen.
+
+```{r q1-visualization, fig.cap="Betroffene Personen über die Zeit"}
+plot_persons_per_time(time_results$temporal_summary)
+```
+
+---
+
+## 4.2 Verteilung der Zielorte
+
+Die folgende Darstellung zeigt die Verteilung der Zielorte nach einer Leerkündigung über die Jahre. Das Jahr 2010 scheint ein ausreisser zu sein, wahrend es sonst, ueber alle gruppen gesehen, stabil ist. # Todo testen, deviant year teil wegnehmen in residence result
+
+```{r zielorte-analysis}
+residence_results <- analyze_composition_shift(df)
+```
+
+```{r q2-visualization}
+plot_composition_shift(residence_results$composition_summary)
+```
+
+---
+
+## 4.3 Altersabhängige Unterschiede im Verbleib innerhalb und ausserhalb der Stadt
+
+```{r q3-analysis}
+# Für diese Auswertung wird die Kategorie "Unbekannt" ausgeschlossen
+df_known <- filter_unknown(df)
+q3_results <- analyze_age_gradient(df_known)
+```
+
+Die Auswertung zeigt Unterschiede zwischen den Altersgruppen innerhalb der Stadt Zürich zu bleiben. Den höchsten Anteil «innerhalb der Stadt» hat `r q3_results$max_age_group` mit `r round(q3_results$max_share * 100, 1)`%, den niedrigsten `r q3_results$min_age_group` mit `r round(q3_results$min_share * 100, 1)` %. Das entspricht einer Differenz von `r round(q3_results$contrast * 100, 1)` Prozentpunkten.
+
+```{r q3-visualization, fig.cap="Within-city share by age group"}
+plot_age_gradient(q3_results$age_summary)
+```
+
+```{r q3-table}
+q3_table <- q3_results$age_summary %>%
+  mutate(
+    `Anteil innerhalb der Stadt` = paste0(round(within_city_share * 100, 1), "%"),
+    `Total` = format(total_count, big.mark = ",")
+  ) %>%
+  select(`Altersgruppe` = age_group, `Anteil innerhalb der Stadt`, `Total`)
+
+kable(q3_table, caption = "Anteil innerhalb der Stadt nach Altersgruppe", align = c("l", "r", "r"))
+```
+
 
 Zur Einordnung, ob sich die Verteilung **„innerhalb der Stadt“ vs. „ausserhalb der Stadt“** zwischen Altersgruppen unterscheidet, wird mit  einen Chi-Quadrat-Test auf Unabhängigkeit (auf aggregierten Zählwerten; ohne Kategorie „Unbekannt“; siehe oben) getestet.
 
@@ -320,12 +282,6 @@ knitr::kable(chi_table, caption = "Chi-Quadrat-Test: Altersgruppe × (innerhalb/
 
 Der Chi-Quadrat-Test deutet auf einen Zusammenhang zwischen Altersgruppe und Ziel (innerhalb/ausserhalb der Stadt) hin (p = `r format.pval(chi_result$p.value, digits = 3)`). Die Effektgrösse **Cramér’s V** beträgt `r round(v, 3)` und entspricht einem kleinen Effekt.
 
----
-
-# 6. Verteilungen Zwischen Zielorten und Altersgruppen
-
-Der globale Chi-Quadrat-Test basiert auf einer binären Klassifikation der Zielorte (innerhalb vs. ausserhalb der Stadt), um einen robusten Gesamteindruck zu erhalten. In einem zweiten Schritt wird diese Kategorie „ausserhalb der Stadt“ weiter aufgeschlüsselt, um zu untersuchen, welche spezifischen Zielorte zu den beobachteten Unterschieden beitragen.
-
 ```{r analyze-age-residence}
 # Prepare data for detailed age x residence analysis
 age_residence_results <- analyze_age_residence_distributions(df)
@@ -334,7 +290,46 @@ log2RR_long <- age_residence_results$log2RR_long
 O_matrix <- age_residence_results$O_matrix # Use the raw matrix for 6.5
 ```
 
-## 6.3 Standardisierte Residuen nach Altersgruppe und Zielort: Wo liegen die auffälligsten Abweichungen?
+---
+
+# 5. Verteilungen Zwischen Zielorten und Altersgruppen
+
+Die globalen Chi-Quadrat-Tests in Abschnitt 5 deuten auf einen signifikanten Zusammenhang zwischen Altersgruppe und dem Zielort hin (sowohl für die binäre Klassifikation `innerhalb/ausserhalb der Stadt` als auch für alle Zielortkategorien). In diesem Abschnitt wird untersucht, welche spezifischen Zielorte zu den beobachteten Unterschieden beitragen.
+
+## 5.1 Globaler Chi-Quadrat-Test (Alle Zielorte)
+
+Um den Zusammenhang zwischen Altersgruppe und dem gesamten Spektrum der Zielortkategorien (inklusive aller ausserstädtischen Zielorte und "Unbekannt") zu untersuchen, führen wir einen weiteren Chi-Quadrat-Test auf der vollen Kontingenztafel Altersgruppe $\times$ Zielort durch.
+
+```{r statistical-test-full-categories}
+# Kontingenztafel: Altersgruppe × Zielort (O_matrix ist die volle Matrix)
+tab_full <- O_matrix
+
+# Chi-Quadrat-Test
+chi_full_result <- chisq.test(tab_full, simulate.p.value=TRUE)
+
+# Effektgrösse: Cramér's V
+n_full <- sum(tab_full)
+v_full <- cramers_v(chi_full_result, tab_full)
+
+# Resultate als Tabelle
+chi_full_table <- tibble::tibble(
+  Kennwert = c("Teststatistik (χ²)", "Freiheitsgrade", "p-Wert", "Cramer's V"),
+  Wert = c(
+    round(as.numeric(chi_full_result$statistic), 2),
+    as.numeric(chi_full_result$parameter),
+    format.pval(chi_full_result$p.value, digits = 3),
+    round(v_full, 3)
+  )
+)
+
+knitr::kable(chi_full_table, caption = "Chi-Quadrat-Test: Altersgruppe × Alle Zielorte")
+
+# Tabelle anzeigen (optional)
+# kable(tab_full, caption = "Kontingenztafel: Altersgruppe × Alle Zielorte")
+```
+
+
+## 5.2 Standardisierte Residuen nach Altersgruppe und Zielort: Wo liegen die auffälligsten Abweichungen?
 Die Heatmap zeigt pro Kombination aus Altersgruppe und Zielort standardisierte Residuen. Werte > 0 (rot) bedeuten, dass diese Kombination häufiger beobachtet wird als unter der Annahme von Unabhängigkeit zu erwarten wäre; Werte < 0 (blau) entsprechend seltener. Auffällig ist, dass 20–39-Jährige beim Zielort „gleiches Stadtquartier“ deutlich unterrepräsentiert sind, während sie bei „übrige Schweiz“ und „Ausland“ überrepräsentiert sind. Bei 60–79-Jährigen zeigt sich dagegen eine Überrepräsentation im gleichen Stadtquartier. Zudem ist die Kategorie „Unbekannt“ bei den 80–99-Jährigen stark überrepräsentiert; dies ist primär als Hinweis auf mögliche Unterschiede in der Abdeckung bzw. Zuordenbarkeit der Zielort-Information zu lesen.
 
 ```{r fig-residua-heatmap, fig.cap="Standardisierte Residuen: Alter × Zielort", message=FALSE, warning=FALSE}
@@ -344,7 +339,7 @@ plot_standardized_residua(Rlong)
 ```
 
 
-# 6.4 Relativrisiko nach Altersgruppe und Zielort: Quantifizierung von Über- und Unterrepräsentation
+# 5.3 Relativrisiko nach Altersgruppe und Zielort: Quantifizierung von Über- und Unterrepräsentation
 
 Diese Heatmap ergänzt die Residuen, indem sie die Abweichungen als log2(Relativrisiko) darstellt. Ein Wert von 0 bedeutet „entspricht dem Gesamtdurchschnitt“. Positive Werte zeigen, dass ein Zielort innerhalb einer Altersgruppe überdurchschnittlich häufig vorkommt, negative Werte entsprechend unterdurchschnittlich häufig. Die Farbskala ist gekappt, damit einzelne extreme Zellen die Lesbarkeit nicht dominieren.
 
@@ -356,7 +351,34 @@ plot_log2_relative_risk(log2RR_long, cap = 2.5)
 ```
 
 
-# 7. Limitationen
+## 5.4 Verbleib im gleichen Stadtquartier
+
+```{r q4-analysis}
+# Todo zeige einfach die same share im selben quartier, allenfalls mache ienen test
+q4_results <- analyze_same_quarter(df)
+```
+
+Anteil der betroffenen Personen, die nach einer Leerkündigung im gleichen Stadtquartier bleiben (falls diese Kategorie im Datensatz vorhanden ist). Den höchsten Anteil weist `r q4_results$max_age_group` mit `r round(q4_results$max_share * 100, 1)`% auf, den niedrigsten `r q4_results$min_age_group` mit `r round(q4_results$min_share * 100, 1)`%. Das entspricht einer Differenz von `r round(q4_results$contrast * 100, 1)` Prozentpunkten.
+
+```{r q4-visualization, eval=q4_results$applicable}
+plot_same_quarter(q4_results$same_quarter_summary)
+```
+
+```{r q4-table, eval=q4_results$applicable}
+q4_table <- q4_results$same_quarter_summary %>%
+  mutate(
+    `Anteil gleiches Stadtquartier` = paste0(round(same_quarter_share * 100, 1), "%"),
+    `Anzahl (gleiches Stadtquartier)` = format(same_quarter_count, big.mark = ","),
+    `Total` = format(total, big.mark = ",")
+  ) %>%
+  select(`Altersgruppe` = age_group, `Anteil gleiches Stadtquartier`, `Anzahl (gleiches Stadtquartier)`, `Total`)
+
+kable(q4_table, caption = "Anteil im gleichen Stadtquartier nach Altersgruppe", align = c("l", "r", "r", "r"))
+```
+
+---
+
+# 6. Limitationen
 
 - Ohne Bezug zur Altersstruktur der Gesamtbevölkerung können wir nicht beurteilen, ob bestimmte Altersgruppen über- oder unterproportional betroffen sind.
 - Der Datensatz erfasst nur Personen mit gemeldeter Leerkündigung und nicht nicht alle Umzüge.
@@ -401,7 +423,7 @@ p13 <- ggplot(p13_data, aes(x = age_group, y = share, fill = new_residence)) +
 p13
 ```
 
-## 6.2 Total variations-Distanzmatrix: Wie ähnlich sind die Jahre bezüglich Zielort-Verteilung?
+## Appendix A2 Total variations-Distanzmatrix: Wie ähnlich sind die Jahre bezüglich Zielort-Verteilung?
 
 Um zu prüfen, ob sich die Zielorte nach Leerkündigung über die Zeit nur in der Menge, aber auch in der **Struktur** (Komposition) verändern, berechne ich für jedes Jahr die Verteilung der Kategorien `new_residence` als **Anteile**.
 
