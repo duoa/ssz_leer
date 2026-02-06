@@ -1,4 +1,5 @@
 # Analysis Functions for Zurich Leerkündigungen Analysis
+# Reviewed: Angelo Duò, 05-02-2026
 
 library(dplyr)
 library(tidyr)
@@ -12,7 +13,7 @@ library(forcats)
 #' @export
 analyze_time_change <- function(df) {
   # Aggregate by year
-  temporal_summary <- df %>%
+  time_summary <- df %>%
     group_by(year) %>%
     summarise(
       total_affected = sum(count, na.rm = TRUE),
@@ -21,95 +22,46 @@ analyze_time_change <- function(df) {
     arrange(year)
   
   # Identify peak year
-  max_count <- max(temporal_summary$total_affected)
-  peak_years <- temporal_summary %>%
+  max_count <- max(time_summary$total_affected)
+  peak_years <- time_summary %>%
     filter(total_affected == max_count) %>%
     pull(year)
   
   return(list(
-    temporal_summary = temporal_summary,
+    time_summary = time_summary,
     peak_years = peak_years,
     peak_count = max_count
   ))
 }
 
-#' Analyze composition shift
-#' Is the distribution of new residence outcomes stable over time?
+#' Summarise year by residence, compute fractions 
 #'
 #' @param df Data frame with year, new_residence, and count columns
-#' @return List with composition analysis results
+#' @return List with df with cols: year,new_residence, new_residence_sort, count, share,total_year
 #' @export
 analyze_composition_shift <- function(df) {
-  # Calculate residence shares by year
+  # Calculate residence fraction by year and total
   composition_summary <- df %>%
     group_by(year, new_residence, new_residence_sort) %>%
     summarise(count = sum(count, na.rm = TRUE), .groups = "drop") %>%
     group_by(year) %>%
     mutate(
-      share = count / sum(count),
+      fraction = count / sum(count),
       total_year = sum(count)
     ) %>%
     ungroup()
   
-  # Calculate baseline composition (average across all years)
-  baseline_composition <- composition_summary %>%
-    group_by(new_residence) %>%
-    summarise(
-      baseline_share = mean(share, na.rm = TRUE),
-      .groups = "drop"
-    )
-  
-  # Calculate deviation from baseline for each year
-  composition_with_deviation <- composition_summary %>%
-    left_join(baseline_composition, by = "new_residence") %>%
-    mutate(
-      deviation = abs(share - baseline_share)
-    )
-  
-  # Identify deviant years (years with large deviations)
-  year_deviations <- composition_with_deviation %>%
-    group_by(year) %>%
-    summarise(
-      max_deviation = max(deviation),
-      total_deviation = sum(deviation),
-      .groups = "drop"
-    ) %>%
-    arrange(desc(max_deviation))
-  
-  # Flag years with deviation > 10 percentage points
-  deviant_years <- year_deviations %>%
-    filter(max_deviation > 0.10) %>%
-    pull(year)
-  
-  # Get details for most deviant year
-  if (length(deviant_years) > 0) {
-    most_deviant_year <- deviant_years[1]
-    deviant_details <- composition_with_deviation %>%
-      filter(year == most_deviant_year) %>%
-      arrange(desc(deviation)) %>%
-      select(year, new_residence, share, baseline_share, deviation)
-  } else {
-    most_deviant_year <- NULL
-    deviant_details <- NULL
-  }
-  
   return(list(
-    composition_summary = composition_summary,
-    baseline_composition = baseline_composition,
-    year_deviations = year_deviations,
-    deviant_years = deviant_years,
-    most_deviant_year = most_deviant_year,
-    deviant_details = deviant_details
+    composition_summary = composition_summary
   ))
 }
 
-#' Analyze age gradient
-#' Do age groups differ in likelihood of remaining within Zurich city?
+#' Analyze age groups and differences within city
 #'
 #' @param df Data frame with age_group, within_city, and count columns
 #' @return List with age gradient analysis results
 #' @export
-analyze_age_gradient <- function(df) {
+analyze_age_groups_within <- function(df) {
   # Calculate within-city share by age group
   age_summary <- df %>%
     group_by(age_group, within_city) %>%
@@ -154,23 +106,16 @@ analyze_age_gradient <- function(df) {
 }
 
 #' Analyze same-quarter dependence on age
-#' If "same city quarter" exists, compare its share across age groups
+#' If "same city quarter" exists, compare its fraction across age groups
 #'
 #' @param df Data frame with age_group, new_residence, and count columns
-#' @return List with same-quarter analysis results or NULL if not applicable
+#' @return df Data frame with  age_group, same_quarter_count, total,same_quarter_share
 #' @export
 analyze_same_quarter <- function(df) {
-  # Check if "same city quarter" category exists
-  has_same_quarter <- any(grepl("gleiches Stadtquartier|Same.*quarter",
-                                 df$new_residence, ignore.case = TRUE))
-  
-  if (!has_same_quarter) {
-    return(list(applicable = FALSE))
-  }
-  
+
   # Filter for same quarter category
   same_quarter_data <- df %>%
-    filter(grepl("gleiches Stadtquartier|Same.*quarter",
+    filter(grepl("gleiches Stadtquartier",
                  new_residence, ignore.case = TRUE))
   
   # Calculate same-quarter share by age group
@@ -185,47 +130,19 @@ analyze_same_quarter <- function(df) {
     mutate(same_quarter_share = same_quarter_count / total) %>%
     arrange(desc(same_quarter_share))
   
-  # Find strongest contrast
-  if (nrow(same_quarter_summary) >= 2) {
-    max_share <- max(same_quarter_summary$same_quarter_share)
-    min_share <- min(same_quarter_summary$same_quarter_share)
-    contrast <- max_share - min_share
-    
-    max_age_group <- same_quarter_summary %>%
-      filter(same_quarter_share == max_share) %>%
-      pull(age_group) %>%
-      first()
-    
-    min_age_group <- same_quarter_summary %>%
-      filter(same_quarter_share == min_share) %>%
-      pull(age_group) %>%
-      first()
-  } else {
-    contrast <- NA
-    max_age_group <- NA
-    min_age_group <- NA
-  }
-  
-  return(list(
-    applicable = TRUE,
-    same_quarter_summary = same_quarter_summary,
-    contrast = contrast,
-    max_age_group = max_age_group,
-    max_share = max_share,
-    min_age_group = min_age_group,
-    min_share = min_share
-  ))
+  return(same_quarter_summary)
 }
 
-#' Analyze unknown 
+#' Summarise the "Unknown" counts
 #' If "Unknown" exists, quantify differences across age groups
-#'
+#' Find min, max and differnces
+#' 
 #' @param df Data frame with age_group, new_residence, and count columns
-#' @return List with unknown concentration analysis results or NULL if not applicable
+#' @return List with "unknown" analysis results or NULL if not applicable
 #' @export
-analyze_unknown_concentration <- function(df) {
+summarise_unknow_category <- function(df) {
   # Check if Unknown category exists
-  has_unknown <- any(grepl("Unbekannt|Unknown", df$new_residence, ignore.case = TRUE))
+  has_unknown <- any(grepl("Unbekannt", df$new_residence, ignore.case = TRUE))
   
   if (!has_unknown) {
     return(list(applicable = FALSE))
@@ -233,7 +150,7 @@ analyze_unknown_concentration <- function(df) {
   
   # Filter for unknown category
   unknown_data <- df %>%
-    filter(grepl("Unbekannt|Unknown", new_residence, ignore.case = TRUE))
+    filter(grepl("Unbekannt", new_residence, ignore.case = TRUE))
   
   # Calculate unknown share by age group
   age_totals <- df %>%
@@ -282,64 +199,71 @@ analyze_unknown_concentration <- function(df) {
   ))
 }
 
-#' Analyze age and new residence distributions using Standardized Residua and log2(Relative Risk).
+
+# bis hier reviewed
+
+#' Analyze age and new residence distributions using Standardized residuals and 
+#' calculate the log2(relative risk).
 #'
-#' This function calculates the contingency table, standardized residua (R), and
-#' log2(Relative Risk) for the Age × New Residence distribution. It ensures
+#' This function calculates the contingency table, standardized residuals, and
+#' log2(relative risk) for the age * new residence distribution. It ensures
 #' correct factor ordering for both age_group (using AlterV20Sort) and
 #' new_residence (using new_residence_sort) for visualization readiness.
 #'
 #' @param df Data frame with age_group, new_residence, count, AlterV20Sort, and new_residence_sort columns.
 #' @return List with:
-#'         - Rlong: Long-format data frame of standardized residua (R).
-#'         - log2RR_long: Long-format data frame of log2(Relative Risk) (log2RR).
+#'         - RR_long: Long-format data frame of standardized residuals.
+#'         - log2RR_long: Long-format data frame of log2RR.
 #'         - ct: The contingency table (age_group x new_residence).
 #' @export
 analyze_age_residence_distributions <- function(df) {
-  # 1) Prepare distinct sort mappings
+  # 1) Prepare sorted residence map
   residence_sort_map <- df %>%
     distinct(new_residence, new_residence_sort) %>%
     arrange(new_residence_sort)
-  
+  # Prepare sorted age map
   age_sort_map <- df %>%
     distinct(age_group, AlterV20Sort) %>%
     arrange(AlterV20Sort)
   
-  # 2) Calculate Contingency Table O (age_group × new_residence)
+  # 2) calculate observed ct long table (age_group × new_residence)
   ct_long <- df %>%
     group_by(age_group, new_residence) %>%
-    summarise(O = sum(count, na.rm = TRUE), .groups = "drop")
-
+    summarise(observed = sum(count, na.rm = TRUE), .groups = "drop")
+  # make table wide
   ct <- ct_long %>%
-    pivot_wider(names_from = new_residence, values_from = O, values_fill = 0)
+    pivot_wider(names_from = new_residence, values_from = observed, values_fill = 0)
   
   age_labels <- ct$age_group
-  O <- as.matrix(select(ct, -age_group))
+  observed <- as.matrix(select(ct, -age_group))
   
-  # 3) Calculate Expected Frequencies E under Unabhängigkeit
-  row_s <- rowSums(O)
-  col_s <- colSums(O)
-  grand <- sum(O)
-  E <- outer(row_s, col_s) / grand
+  # 3) Calculat the expected frequencies under independence
+  row_sum <- rowSums(observed) # how many age obs
+  col_sum <- colSums(observed) # how many target obs
+  total_counts <- sum(observed)
+  # cart. product of row and col normalised by total
+  # Eij = (row_sum_i * cols_sum_j) / N
+  expected_obs <- outer(row_sum, col_sum) / total_counts 
   
-  # 4) Calculate Standardized Residuen R = (O - E) / sqrt(E)
-  R <- (O - E) / sqrt(E)
+  # 4) calc standaritsed residuals 
+  # # R = (O - E) / sqrt(E)
+  standardised_residuals <- (observed - expected_obs) / sqrt(expected_obs)
   
-  # 5) Calculate log2(Relative Risk) RR
-  # row_share: Anteil Zielort innerhalb Altersgruppe
-  row_share <- O / rowSums(O)
-  # overall_share: Gesamtanteil Zielort
-  overall_share <- colSums(O) / sum(O)
-  # Relativrisiko RR = row_share / overall_share
-  RR <- sweep(row_share, 2, overall_share, "/")
+  # 5) Calculate log2(RR)
+  # compute fraction by  age group
+  row_fraction <- observed / row_sum
+  # fraction by residence 
+  col_fraction <- col_sum / total_counts
+  # Relative risk is fraction diveded by respective fraction total
+  # RRij = row_fraction_ij / overall_share_j
+  RR <- sweep(row_fraction, 2, col_fraction, "/")
   log2RR <- log2(RR)
-  log2RR[is.infinite(log2RR)] <- NA
   
-  # 6) Convert R to Long-Format (Rlong)
-  Rdf <- as.data.frame(R)
-  Rdf$age_group <- age_labels
+  # 6) Convert RR to longformat
+  standardised_residuals_df <- as.data.frame(standardised_residuals )
+  standardised_residuals_df$age_group <- age_labels
   
-  Rlong <- Rdf %>%
+  standardised_residuals_long <- standardised_residuals_df %>%
     pivot_longer(-age_group, names_to = "new_residence", values_to = "resid") %>%
     # Order factors using the sort maps and fct_inorder
     left_join(age_sort_map, by = "age_group") %>%
@@ -365,12 +289,5 @@ analyze_age_residence_distributions <- function(df) {
     mutate(new_residence = fct_inorder(new_residence)) %>%
     select(-AlterV20Sort, -new_residence_sort)
   
-  # DEBUG: Log matrix dimensions and content
-  cat("DEBUG: O matrix dimensions:", dim(O), "\n")
-  cat("DEBUG: O matrix sum:", sum(O), "\n")
-  cat("DEBUG: O matrix has positive values:", any(O > 0), "\n")
-  cat("DEBUG: ct data frame dimensions:", dim(ct), "\n")
-  cat("DEBUG: ct column names:", paste(names(ct), collapse = ", "), "\n")
-  
-  return(list(Rlong = Rlong, log2RR_long = log2RR_long, ct = ct, O_matrix = O))
+  return(list(standardised_residuals_long = standardised_residuals_long, log2RR_long = log2RR_long, ct = ct, O_matrix = observed))
 }

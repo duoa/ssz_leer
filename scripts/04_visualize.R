@@ -39,7 +39,7 @@ plot_persons_per_time <- function(temporal_summary) {
 
 #' Create composition plot showing residence outcomes over time
 #'
-#' @param composition_summary Data frame with year, new_residence, and share columns
+#' @param composition_summary Data frame with year, new_residence, and fraction columns
 #' @return ggplot object
 #' @export
 plot_composition_shift <- function(composition_summary) {
@@ -49,7 +49,7 @@ plot_composition_shift <- function(composition_summary) {
     mutate(new_residence = forcats::fct_inorder(new_residence))
 
   # Create stacked area chart
-  p <- ggplot(composition_summary, aes(x = year, y = share, fill = new_residence)) +
+  p <- ggplot(composition_summary, aes(x = year, y = fraction, fill = new_residence)) +
     geom_area(alpha = 0.7) +
     labs(
       title = "Zielort-Zusammensetzung über die Zeit",
@@ -175,19 +175,19 @@ plot_unknown_concentration <- function(unknown_summary) {
   return(p)
 }
 
-#' Create heatmap of standardized residua (R) for age_group vs. new_residence.
+#' Create heatmap of standardized residuals for age_group vs. new_residence.
 #'
 #' @param Rlong Long-format data frame of standardized residua, with factor columns
 #'        `age_group` and `new_residence` already correctly ordered.
 #' @return ggplot object
 #' @export
-plot_standardized_residua <- function(Rlong) {
+plot_standardised_residual <- function(Rlong) {
   p <- ggplot(Rlong, aes(new_residence, age_group, fill = resid)) +
     geom_tile() +
     labs(
       title = "Standardisierte Residuen: Alter × Zielort",
       subtitle = "R = (O − E) / sqrt(E); >0 über-, <0 unterrepräsentiert",
-      x = "Zielort (new_residence)",
+      x = "Zielort",
       y = "Altersgruppe",
       fill = "Residuum"
     ) +
