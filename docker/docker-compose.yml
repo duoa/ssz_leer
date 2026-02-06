@@ -8,11 +8,3 @@ services:
     container_name: leerkuendigungen-analysis
     volumes:
       - ../output:/analysis/output
-    environment:
-      - RENV_CONFIG_SANDBOX_ENABLED=FALSE
-    networks:
-      - analysis-network
-
-networks:
-  analysis-network:
-    driver: bridge

@@ -141,65 +141,18 @@ detect_anomalies <- function(df) {
 #' @return List with all exploration results
 #' @export
 explore_dataset <- function(df) {
-  
   # Time range
   time_range <- get_time_range(df)
-  cat("Time Range:\n")
-  cat("  Earliest year:", time_range$earliest, "\n")
-  cat("  Latest year:", time_range$latest, "\n")
-  cat("  Span:", time_range$span, "years\n\n")
-  
   # Total count
   total_count <- get_total_count(df)
-  cat("Total Affected Persons:", format(total_count, big.mark = ","), "\n\n")
-  
   # Age groups
   age_groups <- get_age_groups(df)
-  cat("Age Groups (", length(age_groups), "):\n", sep = "")
-  for (ag in age_groups) {
-    cat("  -", ag, "\n")
-  }
-  cat("\n")
-  
   # Residence categories
   residence_cats <- get_residence_categories(df)
-  cat("New Residence Categories (", length(residence_cats), "):\n", sep = "")
-  for (rc in residence_cats) {
-    cat("  -", rc, "\n")
-  }
-  cat("\n")
-  
   # Unknown category check
   unknown_info <- check_unknown_category(df)
-  if (unknown_info$exists) {
-    cat("Unknown Category:\n")
-    cat("  Present: YES\n")
-    cat("  Count:", format(unknown_info$count, big.mark = ","), "\n")
-    cat("  Share:", round(unknown_info$share * 100, 1), "%\n\n")
-  } else {
-    cat("Unknown Category: NOT PRESENT\n\n")
-  }
-  
-  # Anomalies
+    # Anomalies
   anomalies <- detect_anomalies(df)
-  if (length(anomalies) > 0) {
-    cat("Detected Anomalies:\n")
-    if (!is.null(anomalies$missing_years)) {
-      cat("  - Missing years:", paste(anomalies$missing_years, collapse = ", "), "\n")
-    }
-    if (!is.null(anomalies$zero_count_rows)) {
-      cat("  - Rows with zero count:", anomalies$zero_count_rows, "\n")
-    }
-    if (!is.null(anomalies$low_count_years)) {
-      cat("  - Years with unusually low counts:", paste(anomalies$low_count_years, collapse = ", "), "\n")
-    }
-    if (!is.null(anomalies$incomplete_age_groups)) {
-      cat("  - Age groups not present in all years:", paste(anomalies$incomplete_age_groups, collapse = ", "), "\n")
-    }
-  } else {
-    cat("No obvious anomalies detected\n")
-  }
-    
   # Return structured results
   return(list(
     time_range = time_range,

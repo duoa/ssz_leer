@@ -39,12 +39,17 @@ plot_persons_per_time <- function(temporal_summary) {
 
 #' Create composition plot showing residence outcomes over time
 #'
-#' @param composition_summary Data frame with year, new_residence, and share columns
+#' @param composition_summary Data frame with year, new_residence, and fraction columns
 #' @return ggplot object
 #' @export
 plot_composition_shift <- function(composition_summary) {
+  # Ensure stacking order is determined by new_residence_sort
+  composition_summary <- composition_summary %>%
+    arrange(new_residence_sort) %>%
+    mutate(new_residence = forcats::fct_inorder(new_residence))
+
   # Create stacked area chart
-  p <- ggplot(composition_summary, aes(x = year, y = share, fill = new_residence)) +
+  p <- ggplot(composition_summary, aes(x = year, y = fraction, fill = new_residence)) +
     geom_area(alpha = 0.7) +
     labs(
       title = "Zielort-Zusammensetzung über die Zeit",
@@ -76,7 +81,7 @@ plot_composition_shift <- function(composition_summary) {
 #' @export
 plot_age_gradient <- function(age_summary) {
   p <- ggplot(age_summary, aes(x = reorder(age_group, within_city_share),
-                              y = within_city_share)) +
+                               y = within_city_share)) +
     geom_col(fill = CB_PALETTE[3], alpha = 0.8) +
     geom_text(aes(label = paste0(round(within_city_share * 100, 1), "%")),
               hjust = -0.2, size = 4) +
@@ -170,3 +175,57 @@ plot_unknown_concentration <- function(unknown_summary) {
   return(p)
 }
 
+#' Create heatmap of standardized residuals for age_group vs. new_residence.
+#'
+#' @param Rlong Long-format data frame of standardized residua, with factor columns
+#'        `age_group` and `new_residence` already correctly ordered.
+#' @return ggplot object
+#' @export
+plot_standardised_residual <- function(Rlong) {
+  p <- ggplot(Rlong, aes(new_residence, age_group, fill = resid)) +
+    geom_tile() +
+    labs(
+      title = "Standardisierte Residuen: Alter × Zielort",
+      subtitle = "R = (O − E) / sqrt(E); >0 über-, <0 unterrepräsentiert",
+      x = "Zielort",
+      y = "Altersgruppe",
+      fill = "Residuum"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      plot.title = element_text(face = "bold", size = 14),
+      plot.subtitle = element_text(color = "gray40")
+    ) +
+    scale_fill_gradient2(low = "blue", mid = "white", high = "red")
+  
+  return(p)
+}
+
+#' Create heatmap of log2(Relative Risk) for age_group vs. new_residence.
+#'
+#' @param log2RR_long Long-format data frame of log2(Relative Risk), with factor columns
+#'        `age_group` and `new_residence` already correctly ordered.
+#' @param cap Numeric value used to clip the log2RR scale for visualization.
+#' @return ggplot object
+#' @export
+plot_log2_relative_risk <- function(log2RR_long, cap = 2.5) {
+  p <- ggplot(log2RR_long, aes(new_residence, age_group, fill = log2RR)) +
+    geom_tile() +
+    labs(
+      title = "log2(Relativrisiko): Über-/Unterrepräsentation Alter × Zielort",
+      subtitle = "0 = durchschnittlich; +1 ≈ 2×; −1 ≈ 0.5× (Farbskala gekappt)",
+      x = "Zielort (new_residence)",
+      y = "Altersgruppe",
+      fill = "log2(RR)"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      plot.title = element_text(face = "bold", size = 14),
+      plot.subtitle = element_text(color = "gray40")
+    ) +
+    scale_fill_gradient2(low = "blue", mid = "white", high = "red")
+    
+  return(p)
+}

@@ -33,5 +33,5 @@ Thumbs.db
 
 # Setup script (temporary)
 setup_renv.R
-
+.roo
 .DS_Store

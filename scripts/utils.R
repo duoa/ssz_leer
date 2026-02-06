@@ -1,5 +1,6 @@
 # Utility Functions for Zurich Leerkündigungen Analysis
 # This file contains helper functions for field mappings, definitions, and calculations
+# Reviewed: Angelo Duò, 05-02-2026
 
 # Field name mappings (dataset -> conceptual)
 # These map the German column names from the dataset to English conceptual names
@@ -7,6 +8,7 @@ FIELD_MAPPINGS <- list(
   year = "StichtagDatJahr",
   age_group = "AlterV20Lang",
   new_residence = "WohnortLeerkuendigungLang_noDM",
+  new_residence_sort = "WohnortLeerkuendigungSort_noDM",
   count = "AnzBestWir"
 )
 
@@ -31,6 +33,7 @@ map_fields <- function(df) {
       year = !!FIELD_MAPPINGS$year,
       age_group = !!FIELD_MAPPINGS$age_group,
       new_residence = !!FIELD_MAPPINGS$new_residence,
+      new_residence_sort = !!FIELD_MAPPINGS$new_residence_sort,
       count = !!FIELD_MAPPINGS$count
     )
   
@@ -42,12 +45,12 @@ map_fields <- function(df) {
   
   return(df_mapped)
 }
-# bis hier gereviewt
-#' Calculate Cramér's V effect size for chi-square test
+
+#' Calculate Cramer's V effect size for chi-square test
 #'
 #' @param chi_result Result object from chisq.test()
 #' @param contingency_table
-#' @return Cramér's V value, bound by  0 and 1
+#' @return Cramer's V value, bound by  0 and 1
 #' @export
 cramers_v <- function(chi_result, contingency_table) {
   chi_stat <- as.numeric(chi_result$statistic)
@@ -57,14 +60,6 @@ cramers_v <- function(chi_result, contingency_table) {
 }
 
 
-#' Check if Unknown category exists in the data
-#'
-#' @param df Data frame with new_residence column
-#' @return Logical indicating if Unknown category exists
-#' @export
-has_unknown_category <- function(df) {
-  any(grepl("Unbekannt|Unknown", df$new_residence, ignore.case = TRUE))
-}
 
 #' Filter out Unknown category
 #'
@@ -72,7 +67,6 @@ has_unknown_category <- function(df) {
 #' @return Data frame with Unknown category removed
 #' @export
 filter_unknown <- function(df) {
-  library(dplyr)
   df %>%
     filter(!grepl("Unbekannt|Unknown", new_residence, ignore.case = TRUE))
 }
@@ -94,4 +88,24 @@ format_pct <- function(value, digits = 1) {
 #' @export
 format_number <- function(value) {
   format(value, big.mark = ",", scientific = FALSE)
+}
+
+#' make a chi square table
+#' 
+make_chi_table <- function(chi_result, cramer_v, label = NULL) {
+  tab <- tibble::tibble(
+    Kennwert = c("Teststatistik (χ²)", "Freiheitsgrade", "p-Wert", "Cramer's V"),
+    Wert = c(
+      round(as.numeric(chi_result$statistic), 2),
+      as.numeric(chi_result$parameter),
+      format.pval(chi_result$p.value, digits = 3),
+      round(as.numeric(cramer_v), 3)
+    )
+  )
+
+  if (!is.null(label)) {
+    tab <- dplyr::mutate(tab, Analyse = label, .before = 1)
+  }
+
+  tab
 }
