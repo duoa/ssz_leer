@@ -1,10 +1,10 @@
 # Zürich Leerkündigungen Analysis
 
-Reproducible analysis of Zürich "Leerkündigungen" (eviction notices due to building refurbishment) using Open Government Data.
+Reproducible analysis of Zürich "Leerkündigungen" using Open Government Data.
 
 ## Overview
 
-This project provides a self-contained, reproducible analysis of Leerkündigungen in Zurich.
+This project provides a self-contained, reproducible analysis of Leerkündigungen in Zürich.
 
 ## Quick Start
 
@@ -32,7 +32,6 @@ open output/leerkuendigungen_report.html
 # Build image:  docker build --platform=linux/amd64 -t leerkuendigungen-analysis -f docker/Dockerfile . for linux build
 docker build -t leerkuendigungen-analysis -f docker/Dockerfile .
 
-
 # Run analysis
 docker run --rm -v $(pwd)/output:/analysis/output leerkuendigungen-analysis
 
@@ -56,11 +55,11 @@ leer/
 ├── scripts/
 │   ├── 01_load.R                      # Data loading and validation
 │   ├── 02_explore.R                   # Exploratory analysis
-│   ├── 03_analyze.R                   # Core analysis (Q1-Q5)
+│   ├── 03_analyze.R                   # Core analysis func
 │   ├── 04_visualize.R                 # Visualizations
-│   └── utils.R                        # Helper functions
+│   └── utils.R                        # Helpers
 ├── tests/
-│   └── testthat/                      # Unit tests
+│   └── testthat/                      # Unit tests (stub)
 ├── output/
 │   └── leerkuendigungen_report.html   # Generated report
 ├── docker/
@@ -78,17 +77,30 @@ leer/
 
 - **R**: Version 4.5 or higher
 - **Docker**: Version 20.10+ (for containerized execution)
-- **Internet connection**: Required to download dataset at runtime
-
-## Key Features
-
-- **Single dataset**: Uses only official Zurich OGD data (BAU505OD5052.csv)
-- **Runtime retrieval**: Downloads data during execution (no bundled data)
-- **Descriptive analysis**: No causal claims, only patterns and associations
-- **Transparent**: All definitions and mappings explicitly documented
-- **Reproducible**: Self-contained execution in clean environment
-
+ 
 ## Documentation
+
+### Development Workflow
+
+This project was partly built using [GitHub Spec-Kit](https://github.com/github/spec-kit), a structured approach to software development, combined with the Roo AI agent for implementation.
+
+**Workflow Steps:**
+
+1. **`speckit.spec`** - Created the initial feature specification ([`spec.md`](specs/001-leerkuendigungen-analysis/spec.md)) defining user stories, acceptance criteria, and what the analysis should accomplish. This is done by using the users specifications. This file is non-technical and agnostic to technical details, allowing for migration to other programming languages.
+
+2. **`speckit.plan`** - Generated an implementation plan ([`plan.md`](specs/001-leerkuendigungen-analysis/plan.md)) outlining technical decisions, dependencies, and architecture
+
+3. **`speckit.research`** - Produced research documentation ([`research.md`](specs/001-leerkuendigungen-analysis/research.md)) exploring the dataset structure and analytical approach
+
+4. **`speckit.data-model`** - Defined the data model ([`data-model.md`](specs/001-leerkuendigungen-analysis/data-model.md)) documenting field mappings and data transformations
+
+5. **`speckit.tasks`** - Created a detailed task list ([`tasks.md`](specs/001-leerkuendigungen-analysis/tasks.md)) breaking down the implementation into concrete steps
+
+6. **Roo Agent Implementation** - The Roo AI agent executed the tasks, creating R scripts, Docker configuration, and documentation.
+
+This workflow ensures clear documentation at every stage, making the project maintainable and reproducible.
+
+### Project Documentation
 
 - **Specification**: [`specs/001-leerkuendigungen-analysis/spec.md`](specs/001-leerkuendigungen-analysis/spec.md)
 - **Implementation Plan**: [`specs/001-leerkuendigungen-analysis/plan.md`](specs/001-leerkuendigungen-analysis/plan.md)
@@ -122,7 +134,7 @@ docker build --no-cache -t leerkuendigungen-analysis -f docker/Dockerfile .
 
 ## License
 
-This analysis uses Open Government Data from the City of Zurich, freely usable with attribution.
+This analysis uses Open Government Data from the City of Zurich.
 
 ## Contact
 
