@@ -215,7 +215,7 @@ plot_log2_relative_risk <- function(log2RR_long, cap = 2.5) {
     labs(
       title = "log2(Relativrisiko): Über-/Unterrepräsentation Alter × Zielort",
       subtitle = "0 = durchschnittlich; +1 ≈ 2×; −1 ≈ 0.5× (Farbskala gekappt)",
-      x = "Zielort (new_residence)",
+      x = "Zielort",
       y = "Altersgruppe",
       fill = "log2(RR)"
     ) +
