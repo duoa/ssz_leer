@@ -5,6 +5,7 @@ Reproducible analysis of Zürich "Leerkündigungen" using Open Government Data.
 ## Overview
 
 This project provides a self-contained, reproducible analysis of Leerkündigungen in Zürich.
+Important Note: The directories `specs/`, `.specify/`, and `.roo/` are development-only and are not required to run the project and not part of the analysis deliverable.
 
 ## Quick Start
 
@@ -85,10 +86,11 @@ leer/
 This project was partly built using [GitHub Spec-Kit](https://github.com/github/spec-kit), a structured approach to software development, combined with the Roo AI agent for implementation.
 
 **Workflow Steps:**
+The following commands we're run: 
 
-1. **`speckit.spec`** - Created the initial feature specification ([`spec.md`](specs/001-leerkuendigungen-analysis/spec.md)) defining user stories, acceptance criteria, and what the analysis should accomplish. This is done by using the users specifications. This file is non-technical and agnostic to technical details, allowing for migration to other programming languages.
+1. **`/speckit.specify`** - Created the initial feature specification ([`spec.md`](specs/001-leerkuendigungen-analysis/spec.md)) defining user stories, acceptance criteria, and what the analysis should accomplish. This is done by using the users specifications. This file is non-technical and agnostic to technical details, allowing for migration to other programming languages.
 
-2. **`speckit.plan`** - Generated an implementation plan ([`plan.md`](specs/001-leerkuendigungen-analysis/plan.md)) outlining technical decisions, dependencies, and architecture
+2. **`/speckit.plan`** - Generated an implementation plan ([`plan.md`](specs/001-leerkuendigungen-analysis/plan.md)) outlining technical decisions, dependencies, and architecture
 
 3. **`speckit.research`** - Produced research documentation ([`research.md`](specs/001-leerkuendigungen-analysis/research.md)) exploring the dataset structure and analytical approach
 
@@ -96,12 +98,12 @@ This project was partly built using [GitHub Spec-Kit](https://github.com/github/
 
 5. **`speckit.tasks`** - Created a detailed task list ([`tasks.md`](specs/001-leerkuendigungen-analysis/tasks.md)) breaking down the implementation into concrete steps
 
-6. **Roo Agent Implementation** - The Roo AI agent executed the tasks, creating R scripts, Docker configuration, and documentation.
+6. **`/speckit.implement`** - The Roo AI agent executed the tasks, creating R scripts, Docker configuration, and documentation.
 
 This workflow ensures clear documentation at every stage, making the project maintainable and reproducible.
 
 ### Project Documentation
-
+These files are for develop, can be changed and must not be reviewed.
 - **Specification**: [`specs/001-leerkuendigungen-analysis/spec.md`](specs/001-leerkuendigungen-analysis/spec.md)
 - **Implementation Plan**: [`specs/001-leerkuendigungen-analysis/plan.md`](specs/001-leerkuendigungen-analysis/plan.md)
 - **Data Model**: [`specs/001-leerkuendigungen-analysis/data-model.md`](specs/001-leerkuendigungen-analysis/data-model.md)
