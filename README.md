@@ -74,6 +74,7 @@ leer/
 ├── renv/                              # R dependency management
 ├── renv.lock                          # Locked dependencies
 └── README.md                          # This file
+└── task_definition.md                 # Original definition for specify
 ```
 
 ## Requirements
@@ -88,7 +89,7 @@ leer/
 This project was partly built using [GitHub Spec-Kit](https://github.com/github/spec-kit), a structured approach to software development, combined with the Roo AI agent for implementation.
 
 **Workflow Steps:**
-The following commands we're run:
+The following commands we're run using `task_definition.md`:
 
 1. **`/speckit.specify`** - Created the initial feature specification ([`spec.md`](specs/001-leerkuendigungen-analysis/spec.md)) defining user stories, acceptance criteria, and what the analysis should accomplish. This is done by using the users specifications. This file is non-technical and agnostic to technical details, allowing for migration to other programming languages.
 
