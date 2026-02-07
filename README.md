@@ -24,20 +24,22 @@ R -e "renv::restore()"
 Rscript -e "rmarkdown::render('analysis/leerkuendigungen_analysis.Rmd', output_dir='output')"
 
 # View results
-open output/leerkuendigungen_report.html
+open output/leerkuendigungen_analysis.html
 ```
 
 ### Option 2: Docker
 
 ```bash
-# Build image:  docker build --platform=linux/amd64 -t leerkuendigungen-analysis -f docker/Dockerfile . for linux build
+# Build image:  
+# docker build --platform=linux/amd64 -t leerkuendigungen-analysis -f docker/Dockerfile . for linux apple silicon build
+# docker build --platform=linux/amd64 -t leerkuendigungen-analysis -f docker/Dockerfile . probably for windows linux docker containers
 docker build -t leerkuendigungen-analysis -f docker/Dockerfile .
 
 # Run analysis
 docker run --rm -v $(pwd)/output:/analysis/output leerkuendigungen-analysis
 
 # View results
-open output/leerkuendigungen_report.html
+open output/leerkuendigungen_analysis.html
 ```
 
 ### Option 3: GitHub Actions
@@ -78,7 +80,7 @@ leer/
 
 - **R**: Version 4.5 or higher
 - **Docker**: Version 20.10+ (for containerized execution)
- 
+
 ## Documentation
 
 ### Development Workflow
@@ -86,7 +88,7 @@ leer/
 This project was partly built using [GitHub Spec-Kit](https://github.com/github/spec-kit), a structured approach to software development, combined with the Roo AI agent for implementation.
 
 **Workflow Steps:**
-The following commands we're run: 
+The following commands we're run:
 
 1. **`/speckit.specify`** - Created the initial feature specification ([`spec.md`](specs/001-leerkuendigungen-analysis/spec.md)) defining user stories, acceptance criteria, and what the analysis should accomplish. This is done by using the users specifications. This file is non-technical and agnostic to technical details, allowing for migration to other programming languages.
 
